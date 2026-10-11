@@ -1,23 +1,11 @@
 import Feather from '@expo/vector-icons/Feather';
 import * as Haptics from 'expo-haptics';
 import { Tabs } from 'expo-router';
-import type { ComponentProps } from 'react';
-import { colors } from '../../theme';
-
-type IconName = ComponentProps<typeof Feather>['name'];
-
-const ICON_SIZE = 24;
-
-function tabIcon(name: IconName) {
-  function TabIcon({ color }: { color: string }) {
-    return <Feather name={name} size={ICON_SIZE} color={color} />;
-  }
-  return TabIcon;
-}
+import { TABS } from '../../../navigation/tabs';
+import { colors } from '../../../theme';
 
 // Bottom tab bar: thin line icons, no labels, no divider. The tab you're on
-// is white, the rest are grey. Add a tab by adding a file next to this one
-// and a <Tabs.Screen> below.
+// is white, the rest are grey. The tabs themselves are listed in navigation/tabs.ts.
 export default function TabsLayout() {
   return (
     <Tabs
@@ -41,22 +29,17 @@ export default function TabsLayout() {
         tabPress: () => Haptics.selectionAsync(),
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Record',
-          tabBarAccessibilityLabel: 'Record',
-          tabBarIcon: tabIcon('home'),
-        }}
-      />
-      <Tabs.Screen
-        name="notes"
-        options={{
-          title: 'Notes',
-          tabBarAccessibilityLabel: 'Notes',
-          tabBarIcon: tabIcon('file-text'),
-        }}
-      />
+      {TABS.map((tab) => (
+        <Tabs.Screen
+          key={tab.name}
+          name={tab.name}
+          options={{
+            title: tab.title,
+            tabBarAccessibilityLabel: tab.title,
+            tabBarIcon: ({ color }) => <Feather name={tab.icon} size={24} color={color} />,
+          }}
+        />
+      ))}
     </Tabs>
   );
 }

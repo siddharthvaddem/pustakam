@@ -6,6 +6,7 @@ export const colors = {
   accent: '#EDB160',
   danger: '#FF8A9A',
   surface: '#151826',
+  divider: '#232738',
 } as const;
 
 // Orb shades: one warm amber ramp, with `tint` leaning ember-orange for depth.
@@ -27,4 +28,7 @@ export const fonts = {
 export const textStyles = {
   transcript: { fontFamily: fonts.regular, fontSize: 22, lineHeight: 33 },
   label: { fontFamily: fonts.medium, fontSize: 12, lineHeight: 16, letterSpacing: 0.6 },
+  body: { fontFamily: fonts.regular, fontSize: 16, lineHeight: 22 },
+  title: { fontFamily: fonts.medium, fontSize: 18, lineHeight: 24 },
+  appName: { fontFamily: fonts.medium, fontSize: 28, lineHeight: 34 },
 } as const;

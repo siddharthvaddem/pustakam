@@ -7,8 +7,10 @@ import {
 } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Orb } from '../components/Orb/Orb';
+import { TopBar } from '../components/TopBar/TopBar';
 import { Transcript } from '../components/Transcript/Transcript';
 import { type Phase, useTranscriber } from '../hooks/useTranscriber';
+import { useOpenDrawer } from '../navigation/useOpenDrawer';
 import { colors } from '../theme';
 import { styles } from './RecordScreen.styles';
 
@@ -37,6 +39,7 @@ const statusText: Record<Phase, string> = {
 export function RecordScreen() {
   const { phase, lines, text, setText, error, level, toggle } = useTranscriber();
   const keyboardOpen = useKeyboardState((state) => state.isVisible);
+  const openDrawer = useOpenDrawer();
 
   const listening = phase === 'listening' || phase === 'starting';
   const editable = phase === 'ready' && lines.length > 0;
@@ -47,6 +50,7 @@ export function RecordScreen() {
       {/* The tab bar already keeps clear of the home indicator, so only the top needs padding. */}
       <SafeAreaView style={styles.screen} edges={['top']}>
         <KeyboardAvoidingView style={styles.screen} behavior="padding">
+          <TopBar icon="menu" accessibilityLabel="Open menu" onPress={openDrawer} />
           <Transcript
             lines={lines}
             listening={listening}

@@ -6,13 +6,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  title: {
-    ...textStyles.label,
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-    paddingHorizontal: 24,
-    paddingTop: 16,
-  },
   empty: {
     flex: 1,
     alignItems: 'center',
