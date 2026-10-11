@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { Keyboard, Pressable, Text, View } from 'react-native';
+import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Orb } from '../components/Orb/Orb';
 import { Transcript } from '../components/Transcript/Transcript';
@@ -21,24 +22,51 @@ const statusText: Record<Phase, string> = {
 };
 
 // Your words fill the screen from the bottom up, and the orb sits under them
-// where your thumb already is.
+// where your thumb already is. After a recording you can tap the text to fix it.
 export function RecordScreen() {
-  const { phase, lines, error, level, toggle } = useTranscriber();
+  const { phase, lines, text, setText, error, level, toggle } = useTranscriber();
+  const keyboardOpen = useKeyboardState((state) => state.isVisible);
+
   const listening = phase === 'listening' || phase === 'starting';
+  const editable = phase === 'ready' && lines.length > 0;
+  const status = editable ? 'tap the text to edit' : statusText[phase];
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <Transcript lines={lines} listening={listening} />
-      <View style={styles.controls}>
-        <Orb phase={phase} level={level} size={ORB_SIZE} onPress={toggle} />
-        <Text
-          style={[styles.status, error && styles.error]}
-          accessibilityRole={error ? 'alert' : undefined}
-          numberOfLines={3}
-        >
-          {error ?? statusText[phase]}
-        </Text>
-      </View>
+      <KeyboardAvoidingView style={styles.screen} behavior="padding">
+        <Transcript
+          lines={lines}
+          listening={listening}
+          editable={editable}
+          text={text}
+          onChangeText={setText}
+        />
+
+        {keyboardOpen ? (
+          // While typing, the orb steps aside so the text has room.
+          <View style={styles.editingBar}>
+            <Pressable
+              onPress={Keyboard.dismiss}
+              accessibilityRole="button"
+              style={styles.doneButton}
+              hitSlop={12}
+            >
+              <Text style={styles.doneText}>done</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.controls}>
+            <Orb phase={phase} level={level} size={ORB_SIZE} onPress={toggle} />
+            <Text
+              style={[styles.status, error && styles.error]}
+              accessibilityRole={error ? 'alert' : undefined}
+              numberOfLines={3}
+            >
+              {error ?? status}
+            </Text>
+          </View>
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

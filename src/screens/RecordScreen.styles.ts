@@ -23,4 +23,20 @@ export const styles = StyleSheet.create({
     color: colors.danger,
     textTransform: 'none',
   },
+  editingBar: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+  },
+  doneButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: colors.surface,
+  },
+  doneText: {
+    ...textStyles.label,
+    color: colors.accent,
+    textTransform: 'uppercase',
+  },
 });

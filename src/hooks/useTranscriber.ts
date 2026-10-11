@@ -22,6 +22,13 @@ function upsertLine(lines: Line[], line: Line): Line[] {
   return next;
 }
 
+function joinLines(lines: Line[]): string {
+  return lines
+    .map((line) => line.text.trim())
+    .filter(Boolean)
+    .join(' ');
+}
+
 // Android needs us to ask for the mic up front. On iOS the native start() asks.
 async function requestMicPermission(): Promise<boolean> {
   if (Platform.OS !== 'android') return true;
@@ -35,6 +42,13 @@ export function useTranscriber() {
   const [lines, setLines] = useState<Line[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // After recording stops, the lines become one plain string you can edit.
+  const [text, setText] = useState('');
+
+  // Mirrors `lines` so stop() can read the final lines right away, without
+  // waiting for React to re-render.
+  const linesRef = useRef<Line[]>([]);
+
   // Mic volume arrives many times a second. A shared value lets the orb animate
   // from it without re-rendering the whole screen each time.
   const level = useSharedValue(0);
@@ -46,9 +60,10 @@ export function useTranscriber() {
   // Listen to the native module and load the model when the screen mounts.
   useEffect(() => {
     const subscriptions = [
-      MoonshineStt.addListener('onLine', (line) =>
-        setLines((current) => upsertLine(current, line)),
-      ),
+      MoonshineStt.addListener('onLine', (line) => {
+        linesRef.current = upsertLine(linesRef.current, line);
+        setLines(linesRef.current);
+      }),
       MoonshineStt.addListener('onLevel', (event) => {
         level.value = event.level;
       }),
@@ -74,7 +89,9 @@ export function useTranscriber() {
     }
 
     // Every new recording starts with a clean screen.
+    linesRef.current = [];
     setLines([]);
+    setText('');
     setPhase('starting');
 
     try {
@@ -90,6 +107,7 @@ export function useTranscriber() {
   const stop = useCallback(async () => {
     setPhase('stopping');
     await MoonshineStt.stop(); // resolves after the last line has been sent
+    setText(joinLines(linesRef.current));
     setPhase('ready');
   }, []);
 
@@ -99,5 +117,5 @@ export function useTranscriber() {
     if (phaseRef.current === 'ready') return start();
   }, [start, stop]);
 
-  return { phase, lines, error, level, toggle };
+  return { phase, lines, text, setText, error, level, toggle };
 }

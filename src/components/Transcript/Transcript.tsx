@@ -1,6 +1,6 @@
 import { Canvas, LinearGradient, Rect, vec } from '@shopify/react-native-skia';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { Line } from '../../hooks/useTranscriber';
 import { colors } from '../../theme';
 import { Caret } from './Caret';
@@ -11,11 +11,15 @@ import { useStickToBottom } from './useStickToBottom';
 type TranscriptProps = {
   lines: Line[];
   listening: boolean;
+  // Once recording stops, the words become plain text you can edit.
+  editable: boolean;
+  text: string;
+  onChangeText: (text: string) => void;
 };
 
 // The live text above the orb, styled after Monkeytype: dim while Moonshine is
 // still guessing, bright once a line is final, with a blinking caret at the end.
-export function Transcript({ lines, listening }: TranscriptProps) {
+export function Transcript({ lines, listening, editable, text, onChangeText }: TranscriptProps) {
   // Needed to size the fade at the top, which is drawn with Skia.
   const [width, setWidth] = useState(0);
   const scroll = useStickToBottom(lines.length > 0);
@@ -26,13 +30,28 @@ export function Transcript({ lines, listening }: TranscriptProps) {
       <ScrollView
         ref={scroll.ref}
         onScroll={scroll.onScroll}
-        onContentSizeChange={scroll.onContentSizeChange}
+        // While editing, typing shouldn't yank the view down to the end.
+        onContentSizeChange={editable ? undefined : scroll.onContentSizeChange}
+        keyboardShouldPersistTaps="handled"
         scrollEventThrottle={16}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         accessibilityLiveRegion="polite"
       >
-        {lines.length === 0 ? (
+        {editable ? (
+          <TextInput
+            style={styles.editor}
+            value={text}
+            onChangeText={onChangeText}
+            multiline
+            // The ScrollView around it does the scrolling.
+            scrollEnabled={false}
+            selectionColor={colors.accent}
+            cursorColor={colors.accent}
+            keyboardAppearance="dark"
+            accessibilityLabel="Transcript, editable"
+          />
+        ) : lines.length === 0 ? (
           // Before any words: a gentle prompt when idle, just the caret once listening.
           listening ? (
             <View style={styles.words}>
@@ -70,7 +89,7 @@ export function Transcript({ lines, listening }: TranscriptProps) {
       )}
 
       {/* Shown when you've scrolled up and new words arrive below. */}
-      {scroll.showJumpButton && (
+      {scroll.showJumpButton && !editable && (
         <Pressable
           onPress={scroll.jumpToLatest}
           accessibilityRole="button"

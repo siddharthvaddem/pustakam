@@ -25,6 +25,13 @@ export const styles = StyleSheet.create({
     // Keeps the row a full line tall when it only holds the caret, so nothing jumps.
     minHeight: textStyles.transcript.lineHeight,
   },
+  editor: {
+    ...textStyles.transcript,
+    color: colors.text,
+    // TextInput adds its own padding on Android; the live view has none.
+    padding: 0,
+    textAlignVertical: 'top',
+  },
   placeholder: {
     ...textStyles.transcript,
     color: colors.textMuted,

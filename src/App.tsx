@@ -5,6 +5,7 @@ import {
 } from '@expo-google-fonts/jetbrains-mono';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RecordScreen } from './screens/RecordScreen';
 import { colors } from './theme';
@@ -16,12 +17,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
-      {fontsLoaded ? (
-        <RecordScreen />
-      ) : (
-        <View style={{ flex: 1, backgroundColor: colors.background }} />
-      )}
+      <KeyboardProvider>
+        <StatusBar style="light" />
+        {fontsLoaded ? (
+          <RecordScreen />
+        ) : (
+          <View style={{ flex: 1, backgroundColor: colors.background }} />
+        )}
+      </KeyboardProvider>
     </SafeAreaProvider>
   );
 }
