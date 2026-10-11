@@ -1,0 +1,10 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "podspecPath": "MoonshineStt.podspec",
+    "modules": ["MoonshineSttModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.moonshinestt.MoonshineSttModule"]
+  }
+}
