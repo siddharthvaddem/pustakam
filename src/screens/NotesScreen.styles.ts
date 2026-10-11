@@ -1,0 +1,33 @@
+import { StyleSheet } from 'react-native';
+import { colors, textStyles } from '../theme';
+
+export const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  title: {
+    ...textStyles.label,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+  },
+  empty: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 32,
+  },
+  emptyTitle: {
+    ...textStyles.transcript,
+    color: colors.textPending,
+    textAlign: 'center',
+  },
+  emptyHint: {
+    ...textStyles.label,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+});

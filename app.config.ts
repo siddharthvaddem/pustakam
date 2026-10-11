@@ -11,6 +11,8 @@ const config: ExpoConfig = {
   slug: 'memory-bank',
   version: '1.0.0',
   orientation: 'portrait',
+  // Needed by Expo Router for deep links.
+  scheme: 'memorybank',
   icon: './assets/icon.png',
   userInterfaceStyle: 'dark',
   backgroundColor: BACKGROUND,
@@ -33,7 +35,7 @@ const config: ExpoConfig = {
     permissions: ['android.permission.RECORD_AUDIO'],
     blockedPermissions: offline ? ['android.permission.INTERNET'] : [],
   },
-  plugins: [['expo-build-properties', { android: { minSdkVersion: 26 } }]],
+  plugins: ['expo-router', ['expo-build-properties', { android: { minSdkVersion: 26 } }]],
 };
 
 export default config;

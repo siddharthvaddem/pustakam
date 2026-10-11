@@ -33,6 +33,7 @@ export const styles = StyleSheet.create({
   placeholder: {
     ...textStyles.transcript,
     color: colors.textMuted,
+    textAlign: 'center',
   },
   topFade: {
     position: 'absolute',

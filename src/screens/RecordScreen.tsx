@@ -44,7 +44,8 @@ export function RecordScreen() {
 
   return (
     <View style={styles.screen}>
-      <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+      {/* The tab bar already keeps clear of the home indicator, so only the top needs padding. */}
+      <SafeAreaView style={styles.screen} edges={['top']}>
         <KeyboardAvoidingView style={styles.screen} behavior="padding">
           <Transcript
             lines={lines}
