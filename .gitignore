@@ -21,6 +21,13 @@ modules/moonshine-stt/ios/Frameworks/
 expo-env.d.ts
 .metro-health-check*
 
+# Local databases (the app creates its own on each device)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+
 # Signing keys and secrets
 *.jks
 *.p8

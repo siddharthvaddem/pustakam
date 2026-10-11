@@ -12,11 +12,6 @@ export const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 32,
   },
-  group: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: colors.surface,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -26,12 +21,6 @@ export const styles = StyleSheet.create({
   },
   rowPressed: {
     backgroundColor: colors.divider,
-  },
-  // Thin line between rows, inset to line up with the labels.
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.divider,
-    marginHorizontal: 20,
   },
   label: {
     ...textStyles.body,

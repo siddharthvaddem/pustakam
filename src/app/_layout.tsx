@@ -8,10 +8,11 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { DatabaseProvider } from '../db/DatabaseProvider';
 import { colors } from '../theme';
 
-// App-wide setup: gestures (for the side menu), keyboard handling, fonts and
-// the status bar. Screens live in (drawer)/ (tabs inside a side menu) and
+// App-wide setup: gestures (for the side menu), keyboard handling, fonts,
+// the database and the status bar. Screens live in (drawer)/ (tabs inside a side menu) and
 // settings.tsx (pushed on top).
 export default function RootLayout() {
   // The font files are bundled with the app, so this never hits the network.
@@ -22,12 +23,14 @@ export default function RootLayout() {
       <KeyboardProvider>
         <StatusBar style="light" />
         {fontsLoaded ? (
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: colors.background },
-            }}
-          />
+          <DatabaseProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: colors.background },
+              }}
+            />
+          </DatabaseProvider>
         ) : (
           <View style={styles.root} />
         )}

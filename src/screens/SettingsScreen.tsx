@@ -1,9 +1,11 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
-import { Fragment, type ComponentProps } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { type Href, router } from 'expo-router';
+import type { ComponentProps } from 'react';
+import { Pressable, ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Card } from '../components/Card/Card';
 import { TopBar } from '../components/TopBar/TopBar';
+import { useKeyterms } from '../features/keyterms/useKeyterms';
 import { colors } from '../theme';
 import { styles } from './SettingsScreen.styles';
 
@@ -12,29 +14,15 @@ type Row = {
   label: string;
   // Small grey value shown before the chevron, like the current model.
   detail?: string;
+  // Rows without a destination are placeholders for features that don't exist yet.
+  href?: Href;
 };
 
-// Placeholders for now: none of these open anything yet.
-const GROUPS: Row[][] = [
-  [
-    { icon: 'cpu', label: 'Speech model', detail: 'Small' },
-    { icon: 'mic', label: 'Microphone' },
-  ],
-  [
-    { icon: 'bell', label: 'Notifications' },
-    { icon: 'droplet', label: 'Appearance' },
-    { icon: 'lock', label: 'App lock' },
-  ],
-  [
-    { icon: 'download', label: 'Export notes' },
-    { icon: 'info', label: 'About' },
-  ],
-];
-
-function SettingsRow({ icon, label, detail }: Row) {
+function SettingsRow({ icon, label, detail, href }: Row) {
   return (
     <Pressable
       accessibilityRole="button"
+      onPress={href ? () => router.push(href) : undefined}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
       <Feather name={icon} size={22} color={colors.text} />
@@ -46,6 +34,29 @@ function SettingsRow({ icon, label, detail }: Row) {
 }
 
 export function SettingsScreen() {
+  const keytermCount = useKeyterms().length;
+
+  const groups: Row[][] = [
+    [
+      { icon: 'cpu', label: 'Speech model', detail: 'Small' },
+      {
+        icon: 'zap',
+        label: 'Keyword boosting',
+        detail: keytermCount ? String(keytermCount) : undefined,
+        href: '/settings/keyterms',
+      },
+    ],
+    [
+      { icon: 'bell', label: 'Notifications' },
+      { icon: 'droplet', label: 'Appearance' },
+      { icon: 'lock', label: 'App lock' },
+    ],
+    [
+      { icon: 'download', label: 'Export notes' },
+      { icon: 'info', label: 'About' },
+    ],
+  ];
+
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <TopBar
@@ -55,15 +66,12 @@ export function SettingsScreen() {
         title="Settings"
       />
       <ScrollView contentContainerStyle={styles.content}>
-        {GROUPS.map((rows, groupIndex) => (
-          <View key={groupIndex} style={styles.group}>
-            {rows.map((row, index) => (
-              <Fragment key={row.label}>
-                {index > 0 && <View style={styles.divider} />}
-                <SettingsRow {...row} />
-              </Fragment>
+        {groups.map((rows, index) => (
+          <Card key={index}>
+            {rows.map((row) => (
+              <SettingsRow key={row.label} {...row} />
             ))}
-          </View>
+          </Card>
         ))}
       </ScrollView>
     </SafeAreaView>

@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Orb } from '../components/Orb/Orb';
 import { TopBar } from '../components/TopBar/TopBar';
 import { Transcript } from '../components/Transcript/Transcript';
+import { useSyncKeyterms } from '../features/keyterms/useSyncKeyterms';
 import { type Phase, useTranscriber } from '../hooks/useTranscriber';
 import { useOpenDrawer } from '../navigation/useOpenDrawer';
 import { colors } from '../theme';
@@ -40,6 +41,7 @@ export function RecordScreen() {
   const { phase, lines, text, setText, error, level, toggle } = useTranscriber();
   const keyboardOpen = useKeyboardState((state) => state.isVisible);
   const openDrawer = useOpenDrawer();
+  useSyncKeyterms();
 
   const listening = phase === 'listening' || phase === 'starting';
   const editable = phase === 'ready' && lines.length > 0;

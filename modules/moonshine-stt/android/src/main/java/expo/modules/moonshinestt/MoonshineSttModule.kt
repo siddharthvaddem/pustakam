@@ -9,6 +9,7 @@ import android.media.MediaRecorder
 import androidx.core.content.ContextCompat
 import ai.moonshine.voice.JNI
 import ai.moonshine.voice.Transcriber
+import ai.moonshine.voice.TranscriberOption
 import ai.moonshine.voice.TranscriptEvent
 import ai.moonshine.voice.TranscriptLine
 import expo.modules.kotlin.Promise
@@ -38,6 +39,14 @@ class MoonshineSttModule : Module() {
   private var captureThread: Thread? = null
   @Volatile private var listening = false
 
+  // Keyword boosting, touched only on the worker. Kept here so every (re)load of
+  // the model uses the latest values.
+  private var keyterms: List<String> = emptyList()
+  // Same as the app's default (BOOST_DEFAULT), so the first load doesn't need a reload.
+  private var keytermBoost = 8.0
+  // The boost can only change by reloading the model, which waits until recording stops.
+  private var reloadPending = false
+
   override fun definition() = ModuleDefinition {
     Name("MoonshineStt")
 
@@ -53,6 +62,35 @@ class MoonshineSttModule : Module() {
           return@execute
         }
         prewarmIfPermitted()
+      }
+    }
+
+    // Words to lean towards. Applies to the next bit of speech, even mid-recording.
+    AsyncFunction("setKeyterms") { terms: List<String>, promise: Promise ->
+      worker.execute {
+        keyterms = terms
+        try {
+          transcriber?.setKeyterms(terms)
+          promise.resolve(null)
+        } catch (e: Throwable) {
+          promise.reject("E_KEYTERMS", e.message ?: "Could not set key terms", e)
+        }
+      }
+    }
+
+    // How strongly to lean towards them. Moonshine only reads this when the model
+    // loads, so changing it reloads the model (after the current recording, if any).
+    AsyncFunction("setKeytermBoost") { boost: Double, promise: Promise ->
+      worker.execute {
+        if (boost != keytermBoost) {
+          keytermBoost = boost
+          when {
+            transcriber == null -> {}
+            listening -> reloadPending = true
+            else -> reloadModel()
+          }
+        }
+        promise.resolve(null)
       }
     }
 
@@ -102,10 +140,23 @@ class MoonshineSttModule : Module() {
   private fun loadIfNeeded() {
     if (transcriber != null) return
     val dir = installModel()
-    transcriber = Transcriber().apply {
+    val options = listOf(TranscriberOption("keyterm_boost", keytermBoost.toString()))
+    transcriber = Transcriber(options).apply {
       loadFromFiles(dir.absolutePath, JNI.MOONSHINE_MODEL_ARCH_SMALL_STREAMING)
       setUpdateInterval(0.3)
+      if (keyterms.isNotEmpty()) setKeyterms(keyterms)
       addListener { event -> event.accept(forwarder) }
+    }
+  }
+
+  private fun reloadModel() {
+    reloadPending = false
+    transcriber?.close()
+    transcriber = null
+    try {
+      loadIfNeeded()
+    } catch (e: Throwable) {
+      sendEvent("onError", mapOf("message" to "Could not reload the model: ${e.message}"))
     }
   }
 
@@ -198,6 +249,7 @@ class MoonshineSttModule : Module() {
       } catch (e: Throwable) {
         sendEvent("onError", mapOf("message" to (e.message ?: "stop failed")))
       }
+      if (reloadPending) reloadModel()
     }.get()
     sendEvent("onLevel", mapOf("level" to 0.0))
   }

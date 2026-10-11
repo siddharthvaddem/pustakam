@@ -6,6 +6,6 @@ module.exports = defineConfig([
   expoConfig,
   prettierConfig,
   {
-    ignores: ['ios/*', 'android/*', 'dist/*'],
+    ignores: ['ios/*', 'android/*', 'dist/*', 'drizzle/*'],
   },
 ]);

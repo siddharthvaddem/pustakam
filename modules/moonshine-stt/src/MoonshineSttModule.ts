@@ -10,6 +10,10 @@ declare class MoonshineSttModule extends NativeModule<MoonshineSttEvents> {
   start(): Promise<void>;
   /** Stops recording. Resolves after the last line of text has been sent. */
   stop(): Promise<void>;
+  /** Words to bias transcription towards, spelled as they should appear. No commas. */
+  setKeyterms(terms: string[]): Promise<void>;
+  /** How strongly to bias (default 2). Reloads the model, after the current recording if any. */
+  setKeytermBoost(boost: number): Promise<void>;
 }
 
 export default requireNativeModule<MoonshineSttModule>('MoonshineStt');

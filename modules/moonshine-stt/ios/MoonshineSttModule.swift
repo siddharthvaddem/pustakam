@@ -23,6 +23,13 @@ public final class MoonshineSttModule: Module {
   private var sessionActive = false
   private var isListening = false
 
+  // Keyword boosting. Kept here so every (re)load of the model uses the latest values.
+  private var keyterms: [String] = []
+  // Same as the app's default (BOOST_DEFAULT), so the first load doesn't need a reload.
+  private var keytermBoost: Float = 8.0
+  // The boost can only change by reloading the model, which waits until recording stops.
+  private var reloadPending = false
+
   // The mic callback hands audio over here and returns right away. If it waited
   // for Moonshine to finish transcribing, iOS would drop audio.
   private let pendingLock = NSLock()
@@ -43,6 +50,41 @@ public final class MoonshineSttModule: Module {
           return
         }
         self.prewarmIfPermitted()
+      }
+    }
+
+    // Words to lean towards. Applies to the next bit of speech, even mid-recording.
+    AsyncFunction("setKeyterms") { (terms: [String], promise: Promise) in
+      self.audioQueue.async {
+        self.keyterms = terms
+        do {
+          try self.transcriber?.setKeyterms(terms)
+          promise.resolve(nil)
+        } catch {
+          promise.reject("E_KEYTERMS", error.localizedDescription)
+        }
+      }
+    }
+
+    // How strongly to lean towards them. Moonshine only reads this when the model
+    // loads, so changing it reloads the model (after the current recording, if any).
+    AsyncFunction("setKeytermBoost") { (boost: Double, promise: Promise) in
+      self.audioQueue.async {
+        let boost = Float(boost)
+        guard boost != self.keytermBoost else {
+          promise.resolve(nil)
+          return
+        }
+        self.keytermBoost = boost
+        if self.transcriber == nil {
+          promise.resolve(nil)
+        } else if self.isListening {
+          self.reloadPending = true
+          promise.resolve(nil)
+        } else {
+          self.reloadModel()
+          promise.resolve(nil)
+        }
       }
     }
 
@@ -103,11 +145,30 @@ public final class MoonshineSttModule: Module {
     else {
       throw MoonshineError.custom(message: "Model folder missing from app bundle", code: -1)
     }
-    let transcriber = try Transcriber(modelPath: root.path, modelArch: .smallStreaming)
+    let transcriber = try Transcriber(
+      modelPath: root.path,
+      modelArch: .smallStreaming,
+      options: [TranscriberOption(name: "keyterm_boost", value: String(keytermBoost))])
+    if !keyterms.isEmpty {
+      try transcriber.setKeyterms(keyterms)
+    }
     let stream = try transcriber.createStream(updateInterval: 0.3)
     stream.addListener { [weak self] event in self?.forward(event) }
     self.transcriber = transcriber
     self.stream = stream
+  }
+
+  private func reloadModel() {
+    reloadPending = false
+    stream?.close()
+    transcriber?.close()
+    stream = nil
+    transcriber = nil
+    do {
+      try loadIfNeeded()
+    } catch {
+      sendEvent("onError", ["message": "Could not reload the model: \(error.localizedDescription)"])
+    }
   }
 
   // Get the mic ready before the first tap. Skipped until the user has granted mic access,
@@ -215,6 +276,7 @@ public final class MoonshineSttModule: Module {
       sendEvent("onError", ["message": error.localizedDescription])
     }
     sendEvent("onLevel", ["level": 0])
+    if reloadPending { reloadModel() }
   }
 
   // Hands everything the mic has captured so far to Moonshine.
