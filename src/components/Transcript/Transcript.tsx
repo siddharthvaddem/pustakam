@@ -1,10 +1,9 @@
-import { Canvas, LinearGradient, Rect, vec } from '@shopify/react-native-skia';
-import { useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { Line } from '../../hooks/useTranscriber';
 import { colors } from '../../theme';
 import { Caret } from './Caret';
-import { FADE_HEIGHT, styles } from './Transcript.styles';
+import { styles } from './Transcript.styles';
 import { TranscriptLine } from './TranscriptLine';
 import { useStickToBottom } from './useStickToBottom';
 
@@ -20,13 +19,11 @@ type TranscriptProps = {
 // The live text above the orb, styled after Monkeytype: dim while Moonshine is
 // still guessing, bright once a line is final, with a blinking caret at the end.
 export function Transcript({ lines, listening, editable, text, onChangeText }: TranscriptProps) {
-  // Needed to size the fade at the top, which is drawn with Skia.
-  const [width, setWidth] = useState(0);
   const scroll = useStickToBottom(lines.length > 0);
   const lastIndex = lines.length - 1;
 
   return (
-    <View style={styles.container} onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
+    <View style={styles.container}>
       <ScrollView
         ref={scroll.ref}
         onScroll={scroll.onScroll}
@@ -76,16 +73,12 @@ export function Transcript({ lines, listening, editable, text, onChangeText }: T
       </ScrollView>
 
       {/* Fades out text that scrolled off the top, so you can tell there's more above. */}
-      {scroll.isScrolled && width > 0 && (
-        <Canvas style={[styles.topFade, { width }]} pointerEvents="none">
-          <Rect x={0} y={0} width={width} height={FADE_HEIGHT}>
-            <LinearGradient
-              start={vec(0, 0)}
-              end={vec(0, FADE_HEIGHT)}
-              colors={[colors.background, `${colors.background}00`]}
-            />
-          </Rect>
-        </Canvas>
+      {scroll.isScrolled && (
+        <LinearGradient
+          style={styles.topFade}
+          colors={[colors.background, `${colors.background}00`]}
+          pointerEvents="none"
+        />
       )}
 
       {/* Shown when you've scrolled up and new words arrive below. */}

@@ -23,20 +23,21 @@ export const styles = StyleSheet.create({
     color: colors.danger,
     textTransform: 'none',
   },
-  editingBar: {
-    alignItems: 'flex-end',
-    paddingHorizontal: 24,
-    paddingVertical: 8,
+  // Keeps the last line of text clear of the check button while typing.
+  keyboardSpacer: {
+    height: 64,
+  },
+  doneDock: {
+    position: 'absolute',
+    right: 20,
+    bottom: 0,
   },
   doneButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.surface,
-  },
-  doneText: {
-    ...textStyles.label,
-    color: colors.accent,
-    textTransform: 'uppercase',
   },
 });

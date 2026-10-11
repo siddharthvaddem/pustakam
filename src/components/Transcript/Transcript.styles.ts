@@ -1,8 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { colors, textStyles } from '../../theme';
 
-export const FADE_HEIGHT = 40;
-
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -40,7 +38,8 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    height: FADE_HEIGHT,
+    right: 0,
+    height: 40,
   },
   jumpButton: {
     position: 'absolute',
