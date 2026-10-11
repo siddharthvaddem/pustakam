@@ -26,7 +26,7 @@ public final class MoonshineSttModule: Module {
   // Keyword boosting. Kept here so every (re)load of the model uses the latest values.
   private var keyterms: [String] = []
   // Same as the app's default (BOOST_DEFAULT), so the first load doesn't need a reload.
-  private var keytermBoost: Float = 8.0
+  private var keytermBoost: Float = 4.0
   // The boost can only change by reloading the model, which waits until recording stops.
   private var reloadPending = false
 

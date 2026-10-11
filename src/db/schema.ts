@@ -1,4 +1,20 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+
+// One saved recording. A day's note is just its entries in time order; the day
+// itself isn't stored anywhere else.
+export const entries = sqliteTable(
+  'entries',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    // Local date the recording started, as 'YYYY-MM-DD'. Stored rather than worked out
+    // from startedAt so a note never hops days when the phone's timezone changes.
+    day: text('day').notNull(),
+    // When you started speaking. Orders a day's entries and shows "9:41 am".
+    startedAt: integer('started_at', { mode: 'timestamp_ms' }).notNull(),
+    text: text('text').notNull(),
+  },
+  (table) => [index('entries_day_idx').on(table.day)],
+);
 
 // Words the speech model should lean towards, spelled exactly as they should appear.
 export const keyterms = sqliteTable('keyterms', {
@@ -6,10 +22,11 @@ export const keyterms = sqliteTable('keyterms', {
   term: text('term').notNull(),
 });
 
-// App preferences as key/value pairs, e.g. keytermBoost = "8".
+// App preferences as key/value pairs, e.g. keytermBoost = "4".
 export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
 });
 
+export type Entry = typeof entries.$inferSelect;
 export type Keyterm = typeof keyterms.$inferSelect;

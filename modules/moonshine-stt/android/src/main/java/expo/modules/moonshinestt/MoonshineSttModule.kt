@@ -43,7 +43,7 @@ class MoonshineSttModule : Module() {
   // the model uses the latest values.
   private var keyterms: List<String> = emptyList()
   // Same as the app's default (BOOST_DEFAULT), so the first load doesn't need a reload.
-  private var keytermBoost = 8.0
+  private var keytermBoost = 4.0
   // The boost can only change by reloading the model, which waits until recording stops.
   private var reloadPending = false
 

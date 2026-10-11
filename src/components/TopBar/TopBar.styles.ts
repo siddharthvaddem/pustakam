@@ -5,6 +5,7 @@ export const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 8,
   },

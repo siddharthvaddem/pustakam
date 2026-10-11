@@ -12,7 +12,7 @@ import { styles } from './SettingsScreen.styles';
 type Row = {
   icon: ComponentProps<typeof Feather>['name'];
   label: string;
-  // Small grey value shown before the chevron, like the current model.
+  // Small grey value shown before the chevron, like how many keywords there are.
   detail?: string;
   // Rows without a destination are placeholders for features that don't exist yet.
   href?: Href;
@@ -38,7 +38,6 @@ export function SettingsScreen() {
 
   const groups: Row[][] = [
     [
-      { icon: 'cpu', label: 'Speech model', detail: 'Small' },
       {
         icon: 'zap',
         label: 'Keyword boosting',
@@ -49,7 +48,6 @@ export function SettingsScreen() {
     [
       { icon: 'bell', label: 'Notifications' },
       { icon: 'droplet', label: 'Appearance' },
-      { icon: 'lock', label: 'App lock' },
     ],
     [
       { icon: 'download', label: 'Export notes' },

@@ -42,8 +42,11 @@ export function useTranscriber() {
   const [lines, setLines] = useState<Line[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // After recording stops, the lines become one plain string you can edit.
+  // The draft: everything recorded since the last send, as plain text you can edit.
+  // Each new recording is added to the end until clear() is called.
   const [text, setText] = useState('');
+  // When the draft's first recording started; null when there's no draft.
+  const [startedAt, setStartedAt] = useState<Date | null>(null);
 
   // Mirrors `lines` so stop() can read the final lines right away, without
   // waiting for React to re-render.
@@ -53,9 +56,11 @@ export function useTranscriber() {
   // from it without re-rendering the whole screen each time.
   const level = useSharedValue(0);
 
-  // `toggle` is created once, so it reads the phase through a ref to always see the latest.
+  // `toggle` is created once, so it reads these through refs to always see the latest.
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
+  const textRef = useRef(text);
+  textRef.current = text;
 
   // Listen to the native module and load the model when the screen mounts.
   useEffect(() => {
@@ -88,14 +93,16 @@ export function useTranscriber() {
       return;
     }
 
-    // Every new recording starts with a clean screen.
+    // The live lines are only this recording's; the draft keeps what came before.
+    const now = new Date();
     linesRef.current = [];
     setLines([]);
-    setText('');
     setPhase('starting');
 
     try {
       await MoonshineStt.start();
+      // A new draft is timed from its first recording.
+      if (!textRef.current.trim()) setStartedAt(now);
       setPhase('listening');
     } catch (startError) {
       const { code, message } = startError as { code?: string; message: string };
@@ -104,10 +111,25 @@ export function useTranscriber() {
     }
   }, []);
 
+  const clear = useCallback(() => {
+    linesRef.current = [];
+    setLines([]);
+    setText('');
+    setStartedAt(null);
+  }, []);
+
   const stop = useCallback(async () => {
     setPhase('stopping');
     await MoonshineStt.stop(); // resolves after the last line has been sent
-    setText(joinLines(linesRef.current));
+
+    // Each recording goes on its own line at the end of the draft.
+    const draft = [textRef.current.trimEnd(), joinLines(linesRef.current)]
+      .filter(Boolean)
+      .join('\n');
+    linesRef.current = [];
+    setLines([]);
+    setText(draft);
+    if (!draft) setStartedAt(null); // nothing was said
     setPhase('ready');
   }, []);
 
@@ -117,5 +139,5 @@ export function useTranscriber() {
     if (phaseRef.current === 'ready') return start();
   }, [start, stop]);
 
-  return { phase, lines, text, setText, error, level, toggle };
+  return { phase, lines, text, setText, startedAt, clear, error, level, toggle };
 }

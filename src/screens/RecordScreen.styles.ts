@@ -27,17 +27,4 @@ export const styles = StyleSheet.create({
   keyboardSpacer: {
     height: 64,
   },
-  doneDock: {
-    position: 'absolute',
-    right: 20,
-    bottom: 0,
-  },
-  doneButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-  },
 });

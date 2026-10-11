@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import Slider from '@react-native-community/slider';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '../components/Card/Card';
@@ -27,6 +27,17 @@ import { setSetting } from '../features/settings/repository';
 import { useSetting } from '../features/settings/useSetting';
 import { colors } from '../theme';
 import { styles } from './KeytermsScreen.styles';
+
+function showTips() {
+  Alert.alert(
+    'Tips',
+    [
+      'Add names one part at a time: the first name and the last name as separate words. A phrase is only boosted as a whole, so saying just the first name wouldn’t get any help.',
+      'Spell and capitalise it exactly as you want it to appear.',
+      `Boost strength ${BOOST_DEFAULT} works well for most names. Higher catches more, but the app may start hearing your words when they weren’t said.`,
+    ].join('\n\n'),
+  );
+}
 
 // Settings → Keyword boosting: the words the speech model should lean towards,
 // and how strongly.
@@ -69,6 +80,7 @@ export function KeytermsScreen() {
         accessibilityLabel="Back"
         onPress={() => router.back()}
         title="Keyword boosting"
+        action={{ icon: 'info', accessibilityLabel: 'Tips', onPress: showTips }}
       />
       <KeyboardAwareScrollView
         contentContainerStyle={styles.content}

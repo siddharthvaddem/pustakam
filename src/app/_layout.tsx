@@ -12,8 +12,8 @@ import { DatabaseProvider } from '../db/DatabaseProvider';
 import { colors } from '../theme';
 
 // App-wide setup: gestures (for the side menu), keyboard handling, fonts,
-// the database and the status bar. Screens live in (drawer)/ (tabs inside a side menu) and
-// settings.tsx (pushed on top).
+// the database and the status bar. Screens live in (drawer)/ (tabs inside a side menu),
+// with settings/ and notes/ pushed on top.
 export default function RootLayout() {
   // The font files are bundled with the app, so this never hits the network.
   const [fontsLoaded] = useFonts({ JetBrainsMono_400Regular, JetBrainsMono_500Medium });

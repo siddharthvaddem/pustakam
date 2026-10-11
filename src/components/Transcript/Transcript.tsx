@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { Line } from '../../hooks/useTranscriber';
 import { colors } from '../../theme';
 import { Caret } from './Caret';
@@ -8,67 +8,50 @@ import { TranscriptLine } from './TranscriptLine';
 import { useStickToBottom } from './useStickToBottom';
 
 type TranscriptProps = {
+  // What's being said right now.
   lines: Line[];
   listening: boolean;
-  // Once recording stops, the words become plain text you can edit.
-  editable: boolean;
+  // The draft so far, shown above the new words when you record more before sending.
   text: string;
-  onChangeText: (text: string) => void;
 };
 
 // The live text above the orb, styled after Monkeytype: dim while Moonshine is
 // still guessing, bright once a line is final, with a blinking caret at the end.
-export function Transcript({ lines, listening, editable, text, onChangeText }: TranscriptProps) {
-  const scroll = useStickToBottom(lines.length > 0);
+export function Transcript({ lines, listening, text }: TranscriptProps) {
+  const scroll = useStickToBottom(lines.length > 0 || text.length > 0);
   const lastIndex = lines.length - 1;
+  const showLive = listening || lines.length > 0;
 
   return (
     <View style={styles.container}>
       <ScrollView
         ref={scroll.ref}
         onScroll={scroll.onScroll}
-        // While editing, typing shouldn't yank the view down to the end.
-        onContentSizeChange={editable ? undefined : scroll.onContentSizeChange}
-        keyboardShouldPersistTaps="handled"
+        onContentSizeChange={scroll.onContentSizeChange}
         scrollEventThrottle={16}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         accessibilityLiveRegion="polite"
       >
-        {editable ? (
-          <TextInput
-            style={styles.editor}
-            value={text}
-            onChangeText={onChangeText}
-            multiline
-            // The ScrollView around it does the scrolling.
-            scrollEnabled={false}
-            selectionColor={colors.accent}
-            cursorColor={colors.accent}
-            keyboardAppearance="dark"
-            accessibilityLabel="Transcript, editable"
-          />
-        ) : lines.length === 0 ? (
-          // Before any words: a gentle prompt when idle, just the caret once listening.
-          listening ? (
+        {showLive ? (
+          <>
+            {text ? <Text style={styles.draft}>{text}</Text> : null}
             <View style={styles.words}>
-              <Caret />
+              {lines.map((line, index) => (
+                <TranscriptLine
+                  key={line.id}
+                  line={line}
+                  // Moonshine sometimes never marks an older line complete, so only the last one can be pending.
+                  isFinal={line.isComplete || index < lastIndex}
+                  showCaret={listening && index === lastIndex}
+                />
+              ))}
+              {/* Before the first word, just the caret. */}
+              {listening && lines.length === 0 && <Caret />}
             </View>
-          ) : (
-            <Text style={styles.placeholder}>what&apos;s on your mind?</Text>
-          )
+          </>
         ) : (
-          <View style={styles.words}>
-            {lines.map((line, index) => (
-              <TranscriptLine
-                key={line.id}
-                line={line}
-                // Moonshine sometimes never marks an older line complete, so only the last one can be pending.
-                isFinal={line.isComplete || index < lastIndex}
-                showCaret={listening && index === lastIndex}
-              />
-            ))}
-          </View>
+          <Text style={styles.placeholder}>what&apos;s on your mind?</Text>
         )}
       </ScrollView>
 
@@ -82,7 +65,7 @@ export function Transcript({ lines, listening, editable, text, onChangeText }: T
       )}
 
       {/* Shown when you've scrolled up and new words arrive below. */}
-      {scroll.showJumpButton && !editable && (
+      {scroll.showJumpButton && (
         <Pressable
           onPress={scroll.jumpToLatest}
           accessibilityRole="button"
