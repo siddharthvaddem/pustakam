@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '../components/Card/Card';
 import { TopBar } from '../components/TopBar/TopBar';
+import { DEV_TOOLS } from '../dev/enabled';
 import { useKeyterms } from '../features/keyterms/useKeyterms';
 import { colors } from '../theme';
 import { styles } from './SettingsScreen.styles';
@@ -54,6 +55,7 @@ export function SettingsScreen() {
       { icon: 'info', label: 'About' },
     ],
   ];
+  if (DEV_TOOLS) groups.push([{ icon: 'tool', label: 'Developer', href: '/settings/developer' }]);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
