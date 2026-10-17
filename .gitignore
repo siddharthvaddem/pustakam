@@ -12,8 +12,8 @@ modules/*/android/build/
 dist/
 web-build/
 
-# Moonshine's iOS framework, downloaded by `npm run setup`
-modules/moonshine-stt/ios/Frameworks/
+# Prebuilt iOS frameworks, downloaded by `npm run setup`
+modules/*/ios/Frameworks/
 
 # Expo and Metro caches
 .expo/

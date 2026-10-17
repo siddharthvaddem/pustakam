@@ -1,0 +1,10 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "podspecPath": "LiteRtLm.podspec",
+    "modules": ["LiteRtLmModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.litertlm.LiteRtLmModule"]
+  }
+}

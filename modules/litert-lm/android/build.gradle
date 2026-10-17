@@ -1,0 +1,30 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.litertlm'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.litertlm"
+  defaultConfig {
+    minSdkVersion 26
+    versionCode 1
+    versionName '0.1.0'
+  }
+}
+
+// litertlm is built with Kotlin 2.4; our compiler is 2.1. Remove once the app is on 2.4+.
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+  compilerOptions {
+    freeCompilerArgs.add('-Xskip-metadata-version-check')
+  }
+}
+
+dependencies {
+  implementation('com.google.ai.edge.litertlm:litertlm-android:0.18.0') {
+    // Pulls in Kotlin 2.4 for the whole app. Only needed for LLM tool calling.
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-reflect'
+  }
+}

@@ -54,7 +54,7 @@ npm install
 npm run setup
 ```
 
-`npm run setup` downloads Moonshine's iOS framework (~100 MB) and checks it against a known checksum. The speech model itself isn't part of the build: the app downloads it on first launch.
+`npm run setup` downloads the prebuilt iOS frameworks for Moonshine (speech, ~100 MB) and LiteRT-LM (AI models, ~125 MB) and checks them against known checksums. The models themselves aren't part of the build: the app downloads them on first launch.
 
 ## 5. Run it
 
