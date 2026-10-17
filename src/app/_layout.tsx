@@ -9,11 +9,12 @@ import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { DatabaseProvider } from '../db/DatabaseProvider';
+import { SpeechModelGate } from '../features/models/SpeechModelGate';
 import { colors } from '../theme';
 
-// App-wide setup: gestures (for the side menu), keyboard handling, fonts,
-// the database and the status bar. Screens live in (drawer)/ (tabs inside a side menu),
-// with settings/ and notes/ pushed on top.
+// App-wide setup: gestures (for the side menu), keyboard handling, fonts, the
+// first-launch speech model download, the database and the status bar. Screens live
+// in (drawer)/ (tabs inside a side menu), with settings/ and notes/ pushed on top.
 export default function RootLayout() {
   // The font files are bundled with the app, so this never hits the network.
   const [fontsLoaded] = useFonts({ JetBrainsMono_400Regular, JetBrainsMono_500Medium });
@@ -23,14 +24,16 @@ export default function RootLayout() {
       <KeyboardProvider>
         <StatusBar style="light" />
         {fontsLoaded ? (
-          <DatabaseProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: colors.background },
-              }}
-            />
-          </DatabaseProvider>
+          <SpeechModelGate>
+            <DatabaseProvider>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: colors.background },
+                }}
+              />
+            </DatabaseProvider>
+          </SpeechModelGate>
         ) : (
           <View style={styles.root} />
         )}

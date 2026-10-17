@@ -13,10 +13,6 @@ android {
     versionCode 1
     versionName '0.1.0'
   }
-  // Bundled model ships as library assets.
-  sourceSets {
-    main.assets.srcDirs += ["$projectDir/../models"]
-  }
 }
 
 dependencies {

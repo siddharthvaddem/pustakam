@@ -34,6 +34,8 @@ class MoonshineSttModule : Module() {
   // queues audio for it, so recording never waits on transcription.
   private val worker = Executors.newSingleThreadExecutor()
   private val pending = ConcurrentLinkedQueue<FloatArray>()
+  // Folder with the downloaded model files (see modules/model-store). Set by load().
+  private var modelPath: String? = null
   private var transcriber: Transcriber? = null
   private var record: AudioRecord? = null
   private var captureThread: Thread? = null
@@ -52,13 +54,14 @@ class MoonshineSttModule : Module() {
 
     Events("onLine", "onLevel", "onError")
 
-    AsyncFunction("load") { promise: Promise ->
+    AsyncFunction("load") { modelPath: String, promise: Promise ->
       worker.execute {
+        this@MoonshineSttModule.modelPath = modelPath
         try {
           loadIfNeeded()
           promise.resolve(null)
         } catch (e: Throwable) {
-          promise.reject("E_LOAD", "Could not load the bundled model: ${e.message}", e)
+          promise.reject("E_LOAD", "Could not load the speech model: ${e.message}", e)
           return@execute
         }
         prewarmIfPermitted()
@@ -139,7 +142,8 @@ class MoonshineSttModule : Module() {
 
   private fun loadIfNeeded() {
     if (transcriber != null) return
-    val dir = installModel()
+    val dir = modelPath?.let(::File)?.takeIf { it.isDirectory }
+      ?: throw IllegalStateException("Speech model folder is missing")
     val options = listOf(TranscriberOption("keyterm_boost", keytermBoost.toString()))
     transcriber = Transcriber(options).apply {
       loadFromFiles(dir.absolutePath, JNI.MOONSHINE_MODEL_ARCH_SMALL_STREAMING)
@@ -160,28 +164,6 @@ class MoonshineSttModule : Module() {
     }
   }
 
-  // Moonshine needs the model as real files, but files bundled in an APK aren't on disk.
-  // So copy them to app storage on first launch. The marker file is written last,
-  // so if the copy gets interrupted it simply runs again next time.
-  private fun installModel(): File {
-    val modelsDir = File(context.filesDir, "models")
-    val dir = File(modelsDir, MODEL_NAME)
-    val marker = File(dir, ".installed-$MODEL_VERSION")
-    if (marker.exists()) return dir
-
-    // Remove models left behind by older versions of the app.
-    modelsDir.listFiles()?.filter { it.name != MODEL_NAME }?.forEach { it.deleteRecursively() }
-    dir.deleteRecursively()
-    dir.mkdirs()
-    val assets = context.assets
-    for (name in assets.list(MODEL_NAME).orEmpty()) {
-      assets.open("$MODEL_NAME/$name").use { input ->
-        File(dir, name).outputStream().use { input.copyTo(it) }
-      }
-    }
-    marker.createNewFile()
-    return dir
-  }
 
   private fun hasMicPermission() =
     ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
@@ -313,8 +295,6 @@ class MoonshineSttModule : Module() {
   }
 
   private companion object {
-    const val MODEL_NAME = "small-streaming-en"
-    const val MODEL_VERSION = "quantized_26_08_21"
     const val SAMPLE_RATE = 16000
     const val CHUNK = 512 // 32 ms
   }

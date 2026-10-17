@@ -2,10 +2,6 @@ import type { ExpoConfig } from 'expo/config';
 
 const BACKGROUND = '#06070B';
 
-// OFFLINE=1 drops Android's network permission to prove the app needs none.
-// Dev builds keep it to reach Metro.
-const offline = process.env.OFFLINE === '1';
-
 const config: ExpoConfig = {
   name: 'memory-bank',
   slug: 'memory-bank',
@@ -32,8 +28,8 @@ const config: ExpoConfig = {
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',
     },
-    permissions: ['android.permission.RECORD_AUDIO'],
-    blockedPermissions: offline ? ['android.permission.INTERNET'] : [],
+    // Internet is only used once, to download the speech model on first launch.
+    permissions: ['android.permission.RECORD_AUDIO', 'android.permission.INTERNET'],
   },
   plugins: ['expo-router', ['expo-build-properties', { android: { minSdkVersion: 26 } }]],
 };

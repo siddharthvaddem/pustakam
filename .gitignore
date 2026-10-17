@@ -12,14 +12,16 @@ modules/*/android/build/
 dist/
 web-build/
 
-# Big binaries, downloaded by `npm run setup`
-modules/moonshine-stt/models/
+# Moonshine's iOS framework, downloaded by `npm run setup`
 modules/moonshine-stt/ios/Frameworks/
 
 # Expo and Metro caches
 .expo/
 expo-env.d.ts
 .metro-health-check*
+
+# Personal planning notes, kept out of git
+scratchpad/
 
 # Local databases (the app creates its own on each device)
 *.db

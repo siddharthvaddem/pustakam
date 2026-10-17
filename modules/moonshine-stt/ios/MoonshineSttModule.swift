@@ -10,12 +10,13 @@ import ExpoModulesCore
 // The mic is set up ahead of time and reused between recordings. Setting it up
 // on tap takes a few hundred ms, and anything said in that time was being lost.
 public final class MoonshineSttModule: Module {
-  private static let modelDirName = "models/small-streaming-en"
   private static let targetFormat = AVAudioFormat(
     commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: false)!
 
   // All the state below is only touched on this one queue, so no locks are needed for it.
   private let audioQueue = DispatchQueue(label: "memorybank.moonshine.audio", qos: .userInitiated)
+  // Folder with the downloaded model files (see modules/model-store). Set by load().
+  private var modelPath: String?
   private var transcriber: Transcriber?
   private var stream: Stream?
   private var engine: AVAudioEngine?
@@ -40,13 +41,14 @@ public final class MoonshineSttModule: Module {
 
     Events("onLine", "onLevel", "onError")
 
-    AsyncFunction("load") { (promise: Promise) in
+    AsyncFunction("load") { (modelPath: String, promise: Promise) in
       self.audioQueue.async {
+        self.modelPath = modelPath
         do {
           try self.loadIfNeeded()
           promise.resolve(nil)
         } catch {
-          promise.reject("E_LOAD", "Could not load the bundled model: \(error.localizedDescription)")
+          promise.reject("E_LOAD", "Could not load the speech model: \(error.localizedDescription)")
           return
         }
         self.prewarmIfPermitted()
@@ -137,16 +139,14 @@ public final class MoonshineSttModule: Module {
     }
   }
 
-  // Loads the model that ships inside the app (see the `resources` line in the podspec).
+  // Loads the model from the folder load() was given.
   private func loadIfNeeded() throws {
     guard transcriber == nil else { return }
-    guard let root = Bundle.main.resourceURL?.appendingPathComponent(Self.modelDirName),
-      FileManager.default.fileExists(atPath: root.path)
-    else {
-      throw MoonshineError.custom(message: "Model folder missing from app bundle", code: -1)
+    guard let modelPath, FileManager.default.fileExists(atPath: modelPath) else {
+      throw MoonshineError.custom(message: "Speech model folder is missing", code: -1)
     }
     let transcriber = try Transcriber(
-      modelPath: root.path,
+      modelPath: modelPath,
       modelArch: .smallStreaming,
       options: [TranscriberOption(name: "keyterm_boost", value: String(keytermBoost))])
     if !keyterms.isEmpty {

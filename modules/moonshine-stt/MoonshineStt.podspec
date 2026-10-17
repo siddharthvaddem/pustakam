@@ -2,7 +2,7 @@ Pod::Spec.new do |s|
   s.name           = 'MoonshineStt'
   s.version        = '0.1.0'
   s.summary        = 'On-device Moonshine speech-to-text bridge'
-  s.description    = 'Wraps the vendored Moonshine C library and Swift bindings (v0.1.5) with the model bundled in-app.'
+  s.description    = 'Wraps the vendored Moonshine C library and Swift bindings (v0.1.5). The model is downloaded after install (see modules/model-store).'
   s.license        = 'MIT'
   s.author         = 'memory-bank'
   s.homepage       = 'https://github.com/moonshine-ai/moonshine'
@@ -16,8 +16,6 @@ Pod::Spec.new do |s|
   s.source_files = 'ios/**/*.swift'
   s.vendored_frameworks = 'ios/Frameworks/Moonshine.xcframework'
   s.libraries = 'c++'
-  # Copied into the app bundle as `models/<name>/`, loaded from disk at runtime.
-  s.resources = ['models']
 
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
