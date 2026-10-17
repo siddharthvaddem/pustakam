@@ -64,6 +64,23 @@ export const SPEECH_EN: ModelPack = {
   ],
 };
 
+// EmbeddingGemma 2 Text 270M: turns notes into vectors for search.
+export const SEARCH_EMBED: ModelPack = {
+  id: 'search-embed',
+  version: 'embeddinggemma-2-text-270m@lrtlm-0.18',
+  files: [
+    {
+      name: 'embeddinggemma-2-text-270m.litertlm',
+      url: 'https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm/resolve/main/embeddinggemma-2-text-270m.litertlm',
+      sha256: '2d079ee2f6f066b1f368e8d7c819f55214eaef1d0513b312321901f30ab286fb',
+      size: 164626432,
+    },
+  ],
+};
+
+// Downloaded on first launch, before the app opens.
+export const CORE_PACKS: readonly ModelPack[] = [SPEECH_EN, SEARCH_EMBED];
+
 export function packBytes(pack: ModelPack): number {
   return pack.files.reduce((total, file) => total + file.size, 0);
 }

@@ -28,7 +28,7 @@ const config: ExpoConfig = {
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',
     },
-    // Internet is only used once, to download the speech model on first launch.
+    // Internet is only used once, to download the models on first launch.
     permissions: ['android.permission.RECORD_AUDIO', 'android.permission.INTERNET'],
   },
   plugins: ['expo-router', ['expo-build-properties', { android: { minSdkVersion: 26 } }]],

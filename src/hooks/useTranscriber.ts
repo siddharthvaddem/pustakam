@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import MoonshineStt, { type LineEvent } from '../../modules/moonshine-stt';
-import { useSpeechModelPath } from '../features/models/SpeechModelGate';
+import { useModelPath } from '../features/models/ModelGate';
+import { SPEECH_EN } from '../features/models/packs';
 
 // loading -> ready -> starting -> listening -> stopping -> ready ...
 // `error` only happens if the model fails to load.
@@ -39,7 +40,7 @@ async function requestMicPermission(): Promise<boolean> {
 
 // The only place the app talks to the native speech module.
 export function useTranscriber() {
-  const modelPath = useSpeechModelPath();
+  const modelPath = useModelPath(SPEECH_EN);
   const [phase, setPhase] = useState<Phase>('loading');
   const [lines, setLines] = useState<Line[]>([]);
   const [error, setError] = useState<string | null>(null);
