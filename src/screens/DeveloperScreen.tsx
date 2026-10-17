@@ -4,14 +4,18 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '../components/Card/Card';
 import { TopBar } from '../components/TopBar/TopBar';
+import { measureEmbeddingSpeed } from '../dev/embeddingSpeed';
 import { DEV_TOOLS } from '../dev/enabled';
 import { countSampleNotes, loadSampleNotes, removeSampleNotes } from '../dev/sampleNotes';
+import { useModelPath } from '../features/models/ModelGate';
+import { SEARCH_EMBED } from '../features/models/packs';
 import { styles } from './DeveloperScreen.styles';
 
 // Settings → Developer: testing tools. Renders nothing unless DEV_TOOLS is on.
 export function DeveloperScreen() {
   const [sampleCount, setSampleCount] = useState<number | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const embedModel = `${useModelPath(SEARCH_EMBED)}/${SEARCH_EMBED.files[0].name}`;
 
   const refresh = useCallback(() => {
     countSampleNotes().then(setSampleCount);
@@ -66,6 +70,26 @@ export function DeveloperScreen() {
               })
             }
           />
+        </Card>
+
+        <Text style={styles.sectionLabel}>embedding speed</Text>
+        <Card>
+          <View style={styles.info}>
+            <Text style={styles.body}>
+              Loads the search model and times it on 50 sample notes. Takes a few seconds.
+            </Text>
+          </View>
+          {(['cpu', 'gpu'] as const).map((backend) => (
+            <ActionRow
+              key={backend}
+              label={`Run on ${backend.toUpperCase()}`}
+              onPress={() =>
+                run(`Timing ${backend.toUpperCase()}`, async () =>
+                  measureEmbeddingSpeed(embedModel, backend),
+                )
+              }
+            />
+          ))}
         </Card>
 
         {status ? <Text style={styles.status}>{status}</Text> : null}
