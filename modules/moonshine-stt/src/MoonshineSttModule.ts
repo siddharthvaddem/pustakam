@@ -15,7 +15,7 @@ declare class MoonshineSttModule extends NativeModule<MoonshineSttEvents> {
   stop(): Promise<void>;
   /** Words to bias transcription towards, spelled as they should appear. No commas. */
   setKeyterms(terms: string[]): Promise<void>;
-  /** How strongly to bias (default 2). Reloads the model, after the current recording if any. */
+  /** How strongly to bias (default 4). Reloads the model, after the current recording if any. */
   setKeytermBoost(boost: number): Promise<void>;
 }
 
