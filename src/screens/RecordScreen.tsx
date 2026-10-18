@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Keyboard, Text, View } from 'react-native';
 import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
@@ -78,7 +79,16 @@ export function RecordScreen() {
       {/* The tab bar already keeps clear of the home indicator, so only the top needs padding. */}
       <SafeAreaView style={styles.screen} edges={['top']}>
         <KeyboardAvoidingView style={styles.screen} behavior="padding">
-          <TopBar icon="menu" accessibilityLabel="Open menu" onPress={openDrawer} />
+          <TopBar
+            icon="menu"
+            accessibilityLabel="Open menu"
+            onPress={openDrawer}
+            action={{
+              icon: 'search',
+              accessibilityLabel: 'Search notes',
+              onPress: () => router.push('/search'),
+            }}
+          />
           {editable ? (
             <DraftCard
               text={text}

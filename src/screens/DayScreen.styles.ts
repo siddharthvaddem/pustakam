@@ -15,6 +15,27 @@ export const styles = StyleSheet.create({
   entry: {
     gap: 6,
   },
+  glow: {
+    position: 'absolute',
+    top: -12,
+    bottom: -12,
+    left: -16,
+    right: -16,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.divider,
+  },
+  related: {
+    gap: 8,
+    paddingTop: 12,
+  },
+  relatedLabel: {
+    ...textStyles.label,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    paddingBottom: 4,
+  },
   time: {
     ...textStyles.label,
     color: colors.textMuted,

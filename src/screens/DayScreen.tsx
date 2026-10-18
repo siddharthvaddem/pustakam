@@ -1,22 +1,39 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, type ScrollView, Text, TextInput, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardDoneButton } from '../components/KeyboardDoneButton/KeyboardDoneButton';
+import { NoteResult } from '../components/NoteResult/NoteResult';
 import { TopBar } from '../components/TopBar/TopBar';
 import type { Entry } from '../db/schema';
 import { dayLabel, timeLabel } from '../features/notes/dates';
 import { deleteEntry, updateEntry } from '../features/notes/repository';
 import { useDayEntries } from '../features/notes/useDayEntries';
+import { useRelatedMoments } from '../features/search/useSearch';
 import { colors } from '../theme';
 import { styles } from './DayScreen.styles';
 
 // One day's note: its entries as paragraphs, each under the time it was recorded.
-// Tap a paragraph to fix it; long-press to delete it.
+// Tap a paragraph to fix it; long-press to delete it. `entry` (from search) is highlighted.
 export function DayScreen() {
-  const { day } = useLocalSearchParams<{ day: string }>();
+  const { day, entry } = useLocalSearchParams<{ day: string; entry?: string }>();
   const entries = useDayEntries(day);
+  const related = useRelatedMoments(day, entries);
+  const scroll = useRef<ScrollView>(null);
+  // Once, not on every re-layout while editing.
+  const scrolled = useRef(false);
+  function scrollTo(y: number) {
+    if (scrolled.current) return;
+    scrolled.current = true;
+    scroll.current?.scrollTo({ y: Math.max(0, y - 16) });
+  }
 
   // Deleting a day's last entry removes the day, so head back to the list.
   const hadEntries = useRef(false);
@@ -35,13 +52,28 @@ export function DayScreen() {
           title={dayLabel(day)}
         />
         <KeyboardAwareScrollView
+          ref={scroll}
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           bottomOffset={72}
         >
-          {entries.map((entry) => (
-            <EntryParagraph key={entry.id} entry={entry} />
+          {entries.map((item) => (
+            <EntryParagraph
+              key={item.id}
+              entry={item}
+              highlighted={String(item.id) === entry}
+              onScrollTo={scrollTo}
+            />
           ))}
+
+          {related.length > 0 && (
+            <View style={styles.related}>
+              <Text style={styles.relatedLabel}>related moments</Text>
+              {related.map((result) => (
+                <NoteResult key={result.id} result={result} />
+              ))}
+            </View>
+          )}
         </KeyboardAwareScrollView>
       </SafeAreaView>
       <KeyboardDoneButton />
@@ -49,8 +81,20 @@ export function DayScreen() {
   );
 }
 
-function EntryParagraph({ entry }: { entry: Entry }) {
+type EntryParagraphProps = {
+  entry: Entry;
+  highlighted: boolean;
+  onScrollTo: (y: number) => void;
+};
+
+function EntryParagraph({ entry, highlighted, onScrollTo }: EntryParagraphProps) {
   const [editing, setEditing] = useState(false);
+  const glow = useSharedValue(highlighted ? 1 : 0);
+  const glowStyle = useAnimatedStyle(() => ({ opacity: glow.value }));
+
+  useEffect(() => {
+    if (highlighted) glow.value = withDelay(1200, withTiming(0, { duration: 800 }));
+  }, [highlighted, glow]);
   const [draft, setDraft] = useState(entry.text);
 
   // Read when editing ends, which can be after this render.
@@ -76,7 +120,11 @@ function EntryParagraph({ entry }: { entry: Entry }) {
   }
 
   return (
-    <View style={styles.entry}>
+    <View
+      style={styles.entry}
+      onLayout={(event) => highlighted && onScrollTo(event.nativeEvent.layout.y)}
+    >
+      <Animated.View style={[styles.glow, glowStyle]} pointerEvents="none" />
       <Text style={styles.time}>{timeLabel(entry.startedAt)}</Text>
       {editing ? (
         <TextInput
