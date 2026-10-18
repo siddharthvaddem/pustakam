@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { blob, index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 // One saved recording. A day's note is just its entries in time order; the day
 // itself isn't stored anywhere else.
@@ -14,6 +14,18 @@ export const entries = sqliteTable(
     text: text('text').notNull(),
   },
   (table) => [index('entries_day_idx').on(table.day)],
+);
+
+// Search embeddings: chunk 0 is the whole entry, 1.. its sentences. Triggers in
+// drizzle/0002_search.sql clear an entry's rows when it changes, so it gets re-indexed.
+export const entryEmbeddings = sqliteTable(
+  'entry_embeddings',
+  {
+    entryId: integer('entry_id').notNull(),
+    chunk: integer('chunk').notNull(),
+    embedding: blob('embedding').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.entryId, table.chunk] })],
 );
 
 // Words the speech model should lean towards, spelled exactly as they should appear.

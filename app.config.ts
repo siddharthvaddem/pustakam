@@ -31,7 +31,12 @@ const config: ExpoConfig = {
     // Internet is only used once, to download the models on first launch.
     permissions: ['android.permission.RECORD_AUDIO', 'android.permission.INTERNET'],
   },
-  plugins: ['expo-router', ['expo-build-properties', { android: { minSdkVersion: 26 } }]],
+  plugins: [
+    'expo-router',
+    ['expo-build-properties', { android: { minSdkVersion: 26 } }],
+    // sqlite-vec, for comparing note embeddings in search queries.
+    ['expo-sqlite', { withSQLiteVecExtension: true }],
+  ],
 };
 
 export default config;
