@@ -2,6 +2,7 @@ import { asc, desc, eq, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import { db } from '../../db/client';
 import { entries } from '../../db/schema';
+import { syncIndex } from '../search/indexer';
 import { localDay } from './dates';
 
 // All reads and writes of the entries table go through here.
@@ -11,10 +12,12 @@ export async function addEntry({ text, startedAt }: { text: string; startedAt: D
   const trimmed = text.trim();
   if (!trimmed) return;
   await db.insert(entries).values({ day: localDay(startedAt), startedAt, text: trimmed });
+  syncIndex();
 }
 
 export async function updateEntry(id: number, text: string) {
   await db.update(entries).set({ text: text.trim() }).where(eq(entries.id, id));
+  syncIndex();
 }
 
 export async function deleteEntry(id: number) {

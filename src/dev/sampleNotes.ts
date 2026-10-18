@@ -2,6 +2,7 @@ import { gte } from 'drizzle-orm';
 import { db } from '../db/client';
 import { entries } from '../db/schema';
 import { localDay } from '../features/notes/dates';
+import { syncIndex } from '../features/search/indexer';
 import { SEED_ID_BASE, SEED_NOTES } from './seedNotes';
 
 function startedAt(daysAgo: number, time: string, now: Date): Date {
@@ -18,6 +19,7 @@ export async function loadSampleNotes(): Promise<number> {
   });
   await removeSampleNotes();
   await db.insert(entries).values(rows);
+  syncIndex();
   return rows.length;
 }
 
