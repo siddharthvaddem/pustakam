@@ -7,6 +7,8 @@ import { TopBar } from '../components/TopBar/TopBar';
 import { measureEmbeddingSpeed } from '../dev/embeddingSpeed';
 import { DEV_TOOLS } from '../dev/enabled';
 import { countSampleNotes, loadSampleNotes, removeSampleNotes } from '../dev/sampleNotes';
+import { exportEvalVectors, runSearchChecks } from '../dev/searchTools';
+import { reindexAll } from '../features/search/indexer';
 import { useModelPath } from '../features/models/ModelGate';
 import { SEARCH_EMBED } from '../features/models/packs';
 import { styles } from './DeveloperScreen.styles';
@@ -48,7 +50,7 @@ export function DeveloperScreen() {
         <Card>
           <View style={styles.info}>
             <Text style={styles.body}>
-              Fictional notes over the last six weeks, for testing. Your own notes are never
+              Fictional notes over the last three months, for testing. Your own notes are never
               touched.
             </Text>
             <Text style={styles.detail}>
@@ -90,6 +92,31 @@ export function DeveloperScreen() {
               }
             />
           ))}
+        </Card>
+
+        <Text style={styles.sectionLabel}>search</Text>
+        <Card>
+          <View style={styles.info}>
+            <Text style={styles.body}>
+              Runs test searches over the sample notes. Load them first and give indexing a few
+              seconds.
+            </Text>
+          </View>
+          <ActionRow label="Search check" onPress={() => run('Checking', runSearchChecks)} />
+          <ActionRow
+            label="Export search test data"
+            onPress={() => run('Exporting', exportEvalVectors)}
+          />
+          <ActionRow
+            label="Re-index all notes"
+            onPress={() =>
+              run('Re-indexing', async () => {
+                const start = performance.now();
+                await reindexAll();
+                return `Re-indexed every note in ${((performance.now() - start) / 1000).toFixed(1)} s`;
+              })
+            }
+          />
         </Card>
 
         {status ? <Text style={styles.status}>{status}</Text> : null}
