@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Downloads the prebuilt iOS frameworks for Moonshine and LiteRT-LM, which are too big
-# for git, and checks their checksums. Skips anything already in place.
+# Fetches and checksums the prebuilt iOS frameworks that are too big for git.
 set -euo pipefail
 
 MODULES="$(cd "$(dirname "$0")/../modules" && pwd)"
@@ -40,7 +39,7 @@ if [[ -d "$MOONSHINE_DIR" ]]; then
 else
   download_checked "$MOONSHINE_URL" "$tmp/Moonshine.xcframework.zip" "$MOONSHINE_SHA"
   unzip -q "$tmp/Moonshine.xcframework.zip" -d "$tmp"
-  # The download also contains a macOS build we never use; keep only iPhone + simulator.
+  # Drop the unused macOS slice; keep iPhone + simulator.
   src="$tmp/Moonshine.xcframework"
   mkdir -p "$(dirname "$MOONSHINE_DIR")"
   xcodebuild -create-xcframework \
