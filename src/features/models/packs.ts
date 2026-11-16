@@ -1,8 +1,6 @@
 import type { PackFile } from '../../../modules/model-store';
 
-// Models the app downloads once after install and keeps on the phone. Each pack is a
-// folder of files pinned to exact checksums; changing `version` makes phones that have
-// the old files download the new ones.
+// Files are pinned to exact checksums; bumping `version` makes phones re-download.
 export type ModelPack = {
   id: string;
   version: string;
@@ -16,7 +14,7 @@ function moonshineFile(name: string, sha256: string, size: number): PackFile {
   return { name, url: `${MOONSHINE_SMALL_EN}/${name}`, sha256, size };
 }
 
-// Moonshine Small Streaming, English: the speech-to-text model.
+// Moonshine Small Streaming, English.
 export const SPEECH_EN: ModelPack = {
   id: 'speech-en',
   version: 'small-streaming-en@quantized_26_08_21',
@@ -64,7 +62,7 @@ export const SPEECH_EN: ModelPack = {
   ],
 };
 
-// EmbeddingGemma 2 Text 270M: turns notes into vectors for search.
+// EmbeddingGemma 2 Text 270M, for search.
 export const SEARCH_EMBED: ModelPack = {
   id: 'search-embed',
   version: 'embeddinggemma-2-text-270m@lrtlm-0.18',
@@ -85,7 +83,7 @@ export function packBytes(pack: ModelPack): number {
   return pack.files.reduce((total, file) => total + file.size, 0);
 }
 
-// Sizes as people read them: "142 MB". Decimal megabytes, like the App Store and Play Store.
+// Decimal MB, like the App Store and Play Store.
 export function formatMegabytes(bytes: number): string {
   return `${Math.round(bytes / 1_000_000)} MB`;
 }

@@ -3,9 +3,12 @@ import { db } from '../../db/client';
 import { settings } from '../../db/schema';
 import { BOOST_DEFAULT } from '../keyterms/boost';
 
-// Every preference the app stores, with its default. Values are saved as text.
+// Values are saved as text.
 export const SETTING_DEFAULTS = {
   keytermBoost: String(BOOST_DEFAULT),
+  theme: 'system', // 'system' | 'light' | 'dark'
+  accent: 'amber', // see ACCENTS in theme.ts
+  haptics: 'on', // 'on' | 'off'
 };
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

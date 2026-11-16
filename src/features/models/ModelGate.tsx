@@ -1,33 +1,33 @@
-import * as Haptics from 'expo-haptics';
 import { createContext, type ReactNode, useContext, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { SetupScreen } from '../../screens/SetupScreen';
+import { haptics } from '../appearance/haptics';
+import { syncIndex } from '../search/indexer';
 import { CORE_PACKS, type ModelPack } from './packs';
 import { type PackPaths, useModelPacks } from './useModelPacks';
 
 const ModelPaths = createContext<PackPaths | null>(null);
 
-/** Folder holding a pack's files. Only available inside ModelGate. */
+/** Only available inside ModelGate. */
 export function useModelPath(pack: ModelPack): string {
   const paths = useContext(ModelPaths);
   if (!paths) throw new Error('useModelPath must be used inside ModelGate');
   return paths[pack.id];
 }
 
-// Shows the first-launch screen until every core model is on the phone, then the app.
-// After the first launch this is a quick check that finds the files already there.
 export function ModelGate({ children }: { children: ReactNode }) {
   const { state, start, cancel } = useModelPacks(CORE_PACKS);
 
-  // Remember a download happened this session, so only then the app fades in.
+  // The app only fades in if a download happened this session.
   const downloaded = useRef(false);
   if (state.status === 'downloading') downloaded.current = true;
 
   useEffect(() => {
-    if (state.status === 'ready' && downloaded.current) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
+    if (state.status !== 'ready') return;
+    if (downloaded.current) haptics.success();
+    // Indexing needs the embedding model, which only exists from here on.
+    syncIndex();
   }, [state.status]);
 
   if (state.status === 'checking') return null;

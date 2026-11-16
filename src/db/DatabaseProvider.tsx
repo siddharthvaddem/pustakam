@@ -1,18 +1,13 @@
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { type ReactNode, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import migrations from '../../drizzle/migrations';
-import { colors, textStyles } from '../theme';
-import { syncIndex } from '../features/search/indexer';
+import { textStyles, useTheme } from '../theme';
 import { db } from './client';
 
-// Brings the database up to date on launch, then shows the app.
 export function DatabaseProvider({ children }: { children: ReactNode }) {
   const { success, error } = useMigrations(db, migrations);
-
-  useEffect(() => {
-    if (success) syncIndex();
-  }, [success]);
+  const { colors } = useTheme();
 
   if (error) {
     return (

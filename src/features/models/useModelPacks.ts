@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import ModelStore from '../../../modules/model-store';
 import { type ModelPack, packBytes } from './packs';
 
-// Leaves some room so the phone isn't left completely full.
+// 10% headroom so the phone isn't left completely full.
 const SPACE_HEADROOM = 1.1;
 
 export type PackErrorCode = 'E_NETWORK' | 'E_CHECKSUM' | 'E_STORAGE' | 'E_SPACE' | 'E_UNKNOWN';
 
-/** Folder of each pack, by pack id. */
+/** Pack id -> folder. */
 export type PackPaths = Record<string, string>;
 
 export type PacksState =

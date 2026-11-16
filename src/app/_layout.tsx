@@ -4,47 +4,42 @@ import {
   useFonts,
 } from '@expo-google-fonts/jetbrains-mono';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { DatabaseProvider } from '../db/DatabaseProvider';
+import { AppearanceProvider } from '../features/appearance/AppearanceProvider';
 import { ModelGate } from '../features/models/ModelGate';
-import { colors } from '../theme';
+import { themeFor, useTheme } from '../theme';
 
-// App-wide setup: gestures (for the side menu), keyboard handling, fonts, the
-// first-launch model download, the database and the status bar. Screens live
-// in (drawer)/ (tabs inside a side menu), with settings/ and notes/ pushed on top.
 export default function RootLayout() {
-  // The font files are bundled with the app, so this never hits the network.
+  // Fonts are bundled, so this never hits the network.
   const [fontsLoaded] = useFonts({ JetBrainsMono_400Regular, JetBrainsMono_500Medium });
+  // Appearance settings live in the DB, so follow the system until it opens.
+  const { background } = themeFor(useColorScheme() === 'light' ? 'light' : 'dark', 'amber').colors;
 
   return (
-    <GestureHandlerRootView style={styles.root}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: background }}>
       <KeyboardProvider>
-        <StatusBar style="light" />
-        {fontsLoaded ? (
-          <ModelGate>
-            <DatabaseProvider>
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: colors.background },
-                }}
-              />
-            </DatabaseProvider>
-          </ModelGate>
-        ) : (
-          <View style={styles.root} />
+        {fontsLoaded && (
+          <DatabaseProvider>
+            <AppearanceProvider>
+              <ModelGate>
+                <Screens />
+              </ModelGate>
+            </AppearanceProvider>
+          </DatabaseProvider>
         )}
       </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-});
+function Screens() {
+  const { colors } = useTheme();
+  return (
+    <Stack
+      screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}
+    />
+  );
+}
