@@ -1,10 +1,9 @@
-import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../theme';
+import { makeStyles, textStyles } from '../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
   },
   content: {
     gap: 28,
@@ -22,9 +21,9 @@ export const styles = StyleSheet.create({
     left: -16,
     right: -16,
     borderRadius: 20,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.divider,
+    borderColor: c.divider,
   },
   related: {
     gap: 8,
@@ -32,24 +31,24 @@ export const styles = StyleSheet.create({
   },
   relatedLabel: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textTransform: 'uppercase',
     paddingBottom: 4,
   },
   time: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textTransform: 'uppercase',
   },
   text: {
     ...textStyles.body,
-    color: colors.text,
+    color: c.text,
   },
   editor: {
     ...textStyles.body,
-    color: colors.text,
+    color: c.text,
     // TextInput adds its own padding on Android; the plain text has none.
     padding: 0,
     textAlignVertical: 'top',
   },
-});
+}));

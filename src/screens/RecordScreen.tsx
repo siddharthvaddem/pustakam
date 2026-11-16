@@ -1,29 +1,28 @@
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
+import { ListIcon, MagnifyingGlassIcon } from 'phosphor-react-native';
 import { useEffect, useState } from 'react';
 import { Alert, Keyboard, Text, View } from 'react-native';
 import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DraftCard } from '../components/DraftCard/DraftCard';
+import { useTabBarSpace } from '../components/GlassTabBar/GlassTabBar';
 import { KeyboardDoneButton } from '../components/KeyboardDoneButton/KeyboardDoneButton';
 import { Orb } from '../components/Orb/Orb';
 import { TopBar } from '../components/TopBar/TopBar';
 import { Transcript } from '../components/Transcript/Transcript';
+import { haptics } from '../features/appearance/haptics';
 import { useSyncKeyterms } from '../features/keyterms/useSyncKeyterms';
 import { addEntry } from '../features/notes/repository';
 import { type Phase, useTranscriber } from '../hooks/useTranscriber';
 import { useOpenDrawer } from '../navigation/useOpenDrawer';
-import { styles } from './RecordScreen.styles';
+import { useStyles } from './RecordScreen.styles';
 
-// Includes the glow. The ball itself is about two thirds of this (~80pt),
-// a little bigger than a camera shutter button.
+// Includes the glow; the ball itself is ~80pt, a bit bigger than a shutter button.
 const ORB_SIZE = 120;
 
-// How long "saved" stays under the orb after sending.
 const SAVED_MS = 2000;
 
-// The small label under the orb. It's the only place that tells you what to do;
-// the transcript area stays for your words.
+// The only instructions on screen; the transcript area is for your words.
 const statusText: Record<Phase, string> = {
   loading: 'waking up',
   ready: 'tap to speak',
@@ -33,13 +32,12 @@ const statusText: Record<Phase, string> = {
   error: 'model failed to load',
 };
 
-// Your words fill the screen from the bottom up, and the orb sits under them
-// where your thumb already is. What you say stays as a draft (you can fix it,
-// or record more) until you send it to today's note.
 export function RecordScreen() {
+  const styles = useStyles();
   const { phase, lines, text, setText, startedAt, clear, error, level, toggle } = useTranscriber();
   const keyboardOpen = useKeyboardState((state) => state.isVisible);
   const openDrawer = useOpenDrawer();
+  const tabBarSpace = useTabBarSpace();
   const [justSaved, setJustSaved] = useState(false);
   useSyncKeyterms();
 
@@ -63,10 +61,9 @@ export function RecordScreen() {
     await addEntry({ text, startedAt });
     clear();
     setJustSaved(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    haptics.success();
   }
 
-  // Asks first, so a draft is never lost to a stray tap.
   function confirmDiscard() {
     Alert.alert('Discard this draft?', 'It won’t be saved to your notes.', [
       { text: 'Cancel', style: 'cancel' },
@@ -76,15 +73,15 @@ export function RecordScreen() {
 
   return (
     <View style={styles.screen}>
-      {/* The tab bar already keeps clear of the home indicator, so only the top needs padding. */}
+      {/* The floating tab bar clears the home indicator, so only pad the top. */}
       <SafeAreaView style={styles.screen} edges={['top']}>
         <KeyboardAvoidingView style={styles.screen} behavior="padding">
           <TopBar
-            icon="menu"
+            icon={ListIcon}
             accessibilityLabel="Open menu"
             onPress={openDrawer}
             action={{
-              icon: 'search',
+              icon: MagnifyingGlassIcon,
               accessibilityLabel: 'Search notes',
               onPress: () => router.push('/search'),
             }}
@@ -102,10 +99,10 @@ export function RecordScreen() {
           )}
 
           {keyboardOpen ? (
-            // While typing, the orb steps aside to make room for the text.
+            // The orb steps aside while typing.
             <View style={styles.keyboardSpacer} />
           ) : (
-            <View style={styles.controls}>
+            <View style={[styles.controls, { paddingBottom: tabBarSpace }]}>
               <Orb phase={phase} level={level} size={ORB_SIZE} onPress={toggle} />
               <Text
                 style={[styles.status, error && styles.error]}

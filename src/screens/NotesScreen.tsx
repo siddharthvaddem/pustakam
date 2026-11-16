@@ -1,22 +1,25 @@
-import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
+import { CaretRightIcon, ListIcon } from 'phosphor-react-native';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarSpace } from '../components/GlassTabBar/GlassTabBar';
 import { TopBar } from '../components/TopBar/TopBar';
 import { dayLabel } from '../features/notes/dates';
 import { useDays } from '../features/notes/useDays';
 import { useOpenDrawer } from '../navigation/useOpenDrawer';
-import { colors } from '../theme';
-import { styles } from './NotesScreen.styles';
+import { useTheme } from '../theme';
+import { useStyles } from './NotesScreen.styles';
 
-// Every day you've recorded something, newest first. Tap one to read it.
 export function NotesScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const openDrawer = useOpenDrawer();
   const days = useDays();
+  const tabBarSpace = useTabBarSpace();
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <TopBar icon="menu" accessibilityLabel="Open menu" onPress={openDrawer} title="Notes" />
+      <TopBar icon={ListIcon} accessibilityLabel="Open menu" onPress={openDrawer} title="Notes" />
       {days.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>no notes yet</Text>
@@ -26,7 +29,7 @@ export function NotesScreen() {
         <FlatList
           data={days}
           keyExtractor={(item) => item.day}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: tabBarSpace }]}
           renderItem={({ item }) => (
             <Pressable
               onPress={() => router.push({ pathname: '/notes/[day]', params: { day: item.day } })}
@@ -44,7 +47,7 @@ export function NotesScreen() {
                   {item.preview}
                 </Text>
               </View>
-              <Feather name="chevron-right" size={18} color={colors.textMuted} />
+              <CaretRightIcon size={18} color={colors.textMuted} />
             </Pressable>
           )}
         />

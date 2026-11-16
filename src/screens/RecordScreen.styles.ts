@@ -1,10 +1,9 @@
-import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../theme';
+import { makeStyles, textStyles } from '../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
   },
   controls: {
     alignItems: 'center',
@@ -15,16 +14,16 @@ export const styles = StyleSheet.create({
   },
   status: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textAlign: 'center',
     textTransform: 'uppercase',
   },
   error: {
-    color: colors.danger,
+    color: c.danger,
     textTransform: 'none',
   },
   // Keeps the last line of text clear of the check button while typing.
   keyboardSpacer: {
     height: 64,
   },
-});
+}));

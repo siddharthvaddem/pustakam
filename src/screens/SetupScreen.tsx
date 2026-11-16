@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Orb } from '../components/Orb/Orb';
 import { formatMegabytes } from '../features/models/packs';
 import type { PackErrorCode, PacksState } from '../features/models/useModelPacks';
-import { styles } from './SetupScreen.styles';
+import { useStyles } from './SetupScreen.styles';
 
 const ORB_SIZE = 160;
 
@@ -32,6 +32,7 @@ type SetupScreenProps = {
 
 // First launch only: downloads the models.
 export function SetupScreen({ state, onStart, onCancel }: SetupScreenProps) {
+  const styles = useStyles();
   const downloading = state.status === 'downloading';
   const fraction = downloading ? state.bytesDone / Math.max(state.bytesTotal, 1) : 0;
 
@@ -117,6 +118,7 @@ export function SetupScreen({ state, onStart, onCancel }: SetupScreenProps) {
 }
 
 function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+  const styles = useStyles();
   return (
     <Pressable
       onPress={onPress}

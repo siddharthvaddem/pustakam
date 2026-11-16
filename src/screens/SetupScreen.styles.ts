@@ -1,12 +1,11 @@
-import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../theme';
+import { makeStyles, textStyles } from '../theme';
 
 const BUTTON_HEIGHT = 52;
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
   },
   intro: {
     flex: 1,
@@ -17,19 +16,19 @@ export const styles = StyleSheet.create({
   },
   appName: {
     ...textStyles.appName,
-    color: colors.text,
+    color: c.text,
   },
   orb: {
     marginVertical: 8,
   },
   title: {
     ...textStyles.title,
-    color: colors.text,
+    color: c.text,
     textAlign: 'center',
   },
   body: {
     ...textStyles.body,
-    color: colors.textMuted,
+    color: c.textMuted,
     textAlign: 'center',
     maxWidth: 340,
   },
@@ -44,12 +43,12 @@ export const styles = StyleSheet.create({
   },
   meta: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textAlign: 'center',
   },
   error: {
     ...textStyles.body,
-    color: colors.danger,
+    color: c.danger,
     textAlign: 'center',
     maxWidth: 340,
   },
@@ -60,11 +59,11 @@ export const styles = StyleSheet.create({
     borderRadius: BUTTON_HEIGHT / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.text,
+    backgroundColor: c.text,
   },
   buttonText: {
     ...textStyles.title,
-    color: colors.background,
+    color: c.background,
   },
   pressed: {
     opacity: 0.7,
@@ -74,16 +73,16 @@ export const styles = StyleSheet.create({
     height: 3,
     borderRadius: 2,
     overflow: 'hidden',
-    backgroundColor: colors.divider,
+    backgroundColor: c.divider,
   },
   fillBar: {
     height: '100%',
-    backgroundColor: colors.text,
+    backgroundColor: c.text,
   },
   link: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textTransform: 'uppercase',
     paddingVertical: 4,
   },
-});
+}));

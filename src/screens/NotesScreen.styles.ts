@@ -1,10 +1,9 @@
-import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../theme';
+import { makeStyles, textStyles } from '../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
   },
   empty: {
     flex: 1,
@@ -15,12 +14,12 @@ export const styles = StyleSheet.create({
   },
   emptyTitle: {
     ...textStyles.transcript,
-    color: colors.textPending,
+    color: c.textPending,
     textAlign: 'center',
   },
   emptyHint: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textAlign: 'center',
   },
   list: {
@@ -36,7 +35,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 24,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
   },
   pressed: {
     opacity: 0.7,
@@ -53,14 +52,14 @@ export const styles = StyleSheet.create({
   },
   dayLabel: {
     ...textStyles.title,
-    color: colors.text,
+    color: c.text,
   },
   count: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
   },
   preview: {
     ...textStyles.body,
-    color: colors.textMuted,
+    color: c.textMuted,
   },
-});
+}));

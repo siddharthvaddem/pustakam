@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { CaretLeftIcon } from 'phosphor-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, type ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, {
@@ -17,12 +18,12 @@ import { dayLabel, timeLabel } from '../features/notes/dates';
 import { deleteEntry, updateEntry } from '../features/notes/repository';
 import { useDayEntries } from '../features/notes/useDayEntries';
 import { useRelatedMoments } from '../features/search/useSearch';
-import { colors } from '../theme';
-import { styles } from './DayScreen.styles';
+import { useTheme } from '../theme';
+import { useStyles } from './DayScreen.styles';
 
-// One day's note: its entries as paragraphs, each under the time it was recorded.
-// Tap a paragraph to fix it; long-press to delete it. `entry` (from search) is highlighted.
+// `entry` (from search) is highlighted.
 export function DayScreen() {
+  const styles = useStyles();
   const { day, entry } = useLocalSearchParams<{ day: string; entry?: string }>();
   const entries = useDayEntries(day);
   const related = useRelatedMoments(day, entries);
@@ -46,7 +47,7 @@ export function DayScreen() {
     <View style={styles.screen}>
       <SafeAreaView style={styles.screen} edges={['top']}>
         <TopBar
-          icon="chevron-left"
+          icon={CaretLeftIcon}
           accessibilityLabel="Back"
           onPress={() => router.back()}
           title={dayLabel(day)}
@@ -88,6 +89,8 @@ type EntryParagraphProps = {
 };
 
 function EntryParagraph({ entry, highlighted, onScrollTo }: EntryParagraphProps) {
+  const styles = useStyles();
+  const { scheme, colors } = useTheme();
   const [editing, setEditing] = useState(false);
   const glow = useSharedValue(highlighted ? 1 : 0);
   const glowStyle = useAnimatedStyle(() => ({ opacity: glow.value }));
@@ -101,8 +104,7 @@ function EntryParagraph({ entry, highlighted, onScrollTo }: EntryParagraphProps)
   const latest = useRef({ draft, entry });
   latest.current = { draft, entry };
 
-  // Saves when editing ends: the keyboard closes, or you leave the page mid-edit.
-  // Clearing a paragraph doesn't delete it; long-press does that.
+  // Saves when editing ends. Clearing a paragraph doesn't delete it; long-press does.
   useEffect(() => {
     if (!editing) return;
     return () => {
@@ -137,7 +139,7 @@ function EntryParagraph({ entry, highlighted, onScrollTo }: EntryParagraphProps)
           scrollEnabled={false}
           selectionColor={colors.accent}
           cursorColor={colors.accent}
-          keyboardAppearance="dark"
+          keyboardAppearance={scheme}
           accessibilityLabel={`Entry at ${timeLabel(entry.startedAt)}, editable`}
         />
       ) : (

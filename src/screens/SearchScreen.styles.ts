@@ -1,11 +1,10 @@
-import { StyleSheet } from 'react-native';
 import { BUTTON_SIZE } from '../components/IconButton/IconButton.styles';
-import { colors, textStyles } from '../theme';
+import { makeStyles, textStyles } from '../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
   },
   bar: {
     flexDirection: 'row',
@@ -22,18 +21,18 @@ export const styles = StyleSheet.create({
     height: BUTTON_SIZE,
     paddingHorizontal: 16,
     borderRadius: BUTTON_SIZE / 2,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
   },
   input: {
     ...textStyles.body,
     flex: 1,
-    color: colors.text,
+    color: c.text,
     // TextInput adds its own padding on Android.
     padding: 0,
   },
   hint: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textAlign: 'center',
     paddingHorizontal: 32,
     paddingTop: 48,
@@ -44,4 +43,4 @@ export const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 24,
   },
-});
+}));

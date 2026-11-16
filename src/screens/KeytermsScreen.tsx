@@ -1,6 +1,6 @@
-import Feather from '@expo/vector-icons/Feather';
 import Slider from '@react-native-community/slider';
 import { router } from 'expo-router';
+import { CaretLeftIcon, InfoIcon, PlusIcon, XIcon } from 'phosphor-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -25,8 +25,8 @@ import {
 } from '../features/keyterms/validate';
 import { setSetting } from '../features/settings/repository';
 import { useSetting } from '../features/settings/useSetting';
-import { colors } from '../theme';
-import { styles } from './KeytermsScreen.styles';
+import { useTheme } from '../theme';
+import { useStyles } from './KeytermsScreen.styles';
 
 function showTips() {
   Alert.alert(
@@ -39,21 +39,19 @@ function showTips() {
   );
 }
 
-// Settings → Keyword boosting: the words the speech model should lean towards,
-// and how strongly.
 export function KeytermsScreen() {
+  const styles = useStyles();
+  const { scheme, colors } = useTheme();
   const terms = useKeyterms();
   const [error, setError] = useState<string | null>(null);
 
-  // The "add a word" field keeps its own text. After each add it's swapped for a
-  // fresh, empty one (new key) instead of being cleared: on iOS a cleared field can
-  // bring old text back on the next keystroke, merging two words into one.
+  // Swap in a fresh field (new key) instead of clearing; iOS can bring cleared text back.
   const textRef = useRef('');
   const [hasText, setHasText] = useState(false);
   const [inputKey, setInputKey] = useState(0);
 
   async function add(text: string) {
-    // Problems we can spot instantly keep the text in the field so it can be fixed.
+    // Instant-check failures keep the text in the field so it can be fixed.
     const check = validateTerm(text);
     if (!check.ok) {
       setError(check.error);
@@ -68,7 +66,7 @@ export function KeytermsScreen() {
     setHasText(false);
     setInputKey((key) => key + 1);
 
-    // The only other failure is a duplicate, and that word is already in the list below.
+    // The only other failure is a duplicate, which is already visible in the list.
     const result = await addKeyterm(text);
     setError(result.ok ? null : result.error);
   }
@@ -76,11 +74,11 @@ export function KeytermsScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <TopBar
-        icon="chevron-left"
+        icon={CaretLeftIcon}
         accessibilityLabel="Back"
         onPress={() => router.back()}
         title="Keyword boosting"
-        action={{ icon: 'info', accessibilityLabel: 'Tips', onPress: showTips }}
+        action={{ icon: InfoIcon, accessibilityLabel: 'Tips', onPress: showTips }}
       />
       <KeyboardAwareScrollView
         contentContainerStyle={styles.content}
@@ -97,7 +95,7 @@ export function KeytermsScreen() {
             <TextInput
               style={styles.input}
               key={inputKey}
-              // Keep typing straight into the fresh field after adding a word.
+              // Keep focus in the fresh field after adding a word.
               autoFocus={inputKey > 0}
               onChangeText={(text) => {
                 textRef.current = text;
@@ -114,7 +112,7 @@ export function KeytermsScreen() {
               submitBehavior="submit"
               cursorColor={colors.text}
               selectionColor={colors.textMuted}
-              keyboardAppearance="dark"
+              keyboardAppearance={scheme}
               accessibilityLabel="New word"
             />
             <Pressable
@@ -124,7 +122,7 @@ export function KeytermsScreen() {
               accessibilityLabel="Add word"
               hitSlop={12}
             >
-              <Feather name="plus" size={22} color={hasText ? colors.text : colors.textMuted} />
+              <PlusIcon size={22} color={hasText ? colors.text : colors.textMuted} />
             </Pressable>
           </View>
         </Card>
@@ -151,7 +149,6 @@ export function KeytermsScreen() {
   );
 }
 
-// One word in the list. Tap it to rename; the × deletes it.
 function TermRow({
   keyterm,
   onError,
@@ -159,6 +156,8 @@ function TermRow({
   keyterm: Keyterm;
   onError: (error: string | null) => void;
 }) {
+  const styles = useStyles();
+  const { scheme, colors } = useTheme();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(keyterm.term);
 
@@ -196,7 +195,7 @@ function TermRow({
           submitBehavior="blurAndSubmit"
           cursorColor={colors.text}
           selectionColor={colors.textMuted}
-          keyboardAppearance="dark"
+          keyboardAppearance={scheme}
           accessibilityLabel={`Rename ${keyterm.term}`}
         />
       ) : (
@@ -218,15 +217,16 @@ function TermRow({
         accessibilityLabel={`Remove ${keyterm.term}`}
         hitSlop={12}
       >
-        <Feather name="x" size={20} color={colors.textMuted} />
+        <XIcon size={20} color={colors.textMuted} />
       </Pressable>
     </View>
   );
 }
 
-// Drag to set how strongly the model leans towards your words. The value updates
-// live while dragging but is only saved on release, since each change reloads the model.
+// Saved only on release, since each change reloads the model.
 function BoostSlider() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const saved = Number(useSetting('keytermBoost'));
   const [value, setValue] = useState(saved);
 

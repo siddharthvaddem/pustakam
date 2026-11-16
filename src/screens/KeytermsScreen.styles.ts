@@ -1,10 +1,9 @@
-import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../theme';
+import { makeStyles, textStyles } from '../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
   },
   content: {
     gap: 12,
@@ -14,13 +13,13 @@ export const styles = StyleSheet.create({
   },
   intro: {
     ...textStyles.body,
-    color: colors.textMuted,
+    color: c.textMuted,
     paddingHorizontal: 4,
     paddingBottom: 4,
   },
   sectionLabel: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textTransform: 'uppercase',
     paddingHorizontal: 4,
     paddingTop: 12,
@@ -34,24 +33,24 @@ export const styles = StyleSheet.create({
   },
   input: {
     ...textStyles.body,
-    color: colors.text,
+    color: c.text,
     flex: 1,
     paddingVertical: 16,
   },
   term: {
     ...textStyles.body,
-    color: colors.text,
+    color: c.text,
     flex: 1,
     paddingVertical: 16,
   },
   error: {
     ...textStyles.label,
-    color: colors.danger,
+    color: c.danger,
     paddingHorizontal: 4,
   },
   empty: {
     ...textStyles.body,
-    color: colors.textMuted,
+    color: c.textMuted,
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
@@ -67,11 +66,11 @@ export const styles = StyleSheet.create({
   },
   sliderValue: {
     ...textStyles.title,
-    color: colors.text,
+    color: c.text,
   },
   resetText: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textTransform: 'uppercase',
   },
   sliderScale: {
@@ -80,6 +79,6 @@ export const styles = StyleSheet.create({
   },
   presetHint: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
   },
-});
+}));
