@@ -11,7 +11,7 @@ export function listKeytermsQuery() {
   return db.select().from(keyterms).orderBy(asc(keyterms.term));
 }
 
-// True if another row already has this term, ignoring case ("kubernetes" = "Kubernetes").
+// Case-insensitive: "kubernetes" = "Kubernetes".
 async function isDuplicate(term: string, exceptId?: number) {
   const sameTerm = eq(sql`lower(${keyterms.term})`, term.toLowerCase());
   const rows = await db

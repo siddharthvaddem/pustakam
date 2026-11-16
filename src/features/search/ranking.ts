@@ -1,4 +1,4 @@
-// Pure ranking logic, so scripts/search-eval.mjs can test exactly what the app runs.
+// Keyword and meaning matches, cut-offs, and merging the two.
 
 const MIN_SIMILARITY = 0.73;
 const MAX_GAP_FROM_BEST = 0.065;
@@ -14,7 +14,7 @@ const STOPWORDS = new Set(
   ),
 );
 
-export function words(text: string): string[] {
+function words(text: string): string[] {
   return text
     .toLowerCase()
     .split(/[^\p{L}\p{N}]+/u)
@@ -60,7 +60,7 @@ function correctTypo(word: string, vocab: VocabTerm[]): string {
   return best ? best.term : word;
 }
 
-// "when did Priya's cat" -> "priya"* "s"* "cat"* (all must appear, as prefixes).
+// "when did Sam's cat" -> "sam"* "s"* "cat"* (all must appear, as prefixes).
 export function keywordQuery(query: string, vocab: VocabTerm[]): string | null {
   const kept = words(query)
     .filter((word) => !STOPWORDS.has(word))

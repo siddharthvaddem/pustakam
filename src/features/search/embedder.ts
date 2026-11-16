@@ -3,8 +3,6 @@ import LiteRtLm, { type Backend } from '../../../modules/litert-lm';
 import ModelStore from '../../../modules/model-store';
 import { SEARCH_EMBED } from '../models/packs';
 
-// Turns text into embeddings with EmbeddingGemma, loading the model on first use.
-
 // CPU was faster than GPU on a Pixel 8; Google's iPhone numbers favour GPU.
 const BACKEND: Backend = Platform.OS === 'android' ? 'cpu' : 'gpu';
 
@@ -23,7 +21,7 @@ async function load() {
   }
 }
 
-// Reloads if something closed the model, like the speed check.
+// Loads the model on the first call.
 async function embed(texts: string[]): Promise<number[][]> {
   try {
     return await LiteRtLm.embed(texts);

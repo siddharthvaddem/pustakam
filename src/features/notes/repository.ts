@@ -7,7 +7,7 @@ import { localDay } from './dates';
 
 // All reads and writes of the entries table go through here.
 
-// Saves a new entry under the day it was started. Empty text is skipped.
+// Empty text is skipped.
 export async function addEntry({ text, startedAt }: { text: string; startedAt: Date }) {
   const trimmed = text.trim();
   if (!trimmed) return;
@@ -24,7 +24,7 @@ export async function deleteEntry(id: number) {
   await db.delete(entries).where(eq(entries.id, id));
 }
 
-// One row per day, newest first, with how many entries it has and the first one as a preview.
+// One row per day, newest first, with an entry count and the first entry as a preview.
 const earliest = alias(entries, 'earliest');
 export function daysQuery() {
   const firstText = db

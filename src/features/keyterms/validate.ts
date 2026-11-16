@@ -1,13 +1,11 @@
 export const MAX_TERM_LENGTH = 64;
-// Moonshine has no hard limit, but it caps lists it builds itself at 200: a long
-// list costs accuracy on all the words you didn't add.
+// Moonshine caps its own lists at 200; long lists cost accuracy on every other word.
 export const MAX_TERMS = 200;
 export const TOO_MANY_TERMS = `You can add up to ${MAX_TERMS} words. Remove one first.`;
 
 export type ValidationResult = { ok: true; term: string } | { ok: false; error: string };
 
-// Cleans up a term the user typed and checks it's something Moonshine can use.
-// Duplicates are checked separately against the database (see repository.ts).
+// Duplicates are checked against the DB in repository.ts.
 export function validateTerm(input: string): ValidationResult {
   const term = input.trim().replace(/\s+/g, ' ');
 

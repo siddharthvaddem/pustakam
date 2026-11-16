@@ -1,7 +1,4 @@
-// Keyword boost strength. Moonshine accepts any decimal number; this range matches
-// the one its own evaluation script sweeps (0 to 12). Moonshine's default is 2, which
-// misses unusual names. In our tests 4 caught uncommon first and last names, while 8
-// got stuck repeating keywords and dropped the rest of the sentence.
+// Moonshine's default 2 misses rare names; in tests 4 caught them, 8 got stuck repeating.
 export const BOOST_MIN = 0;
 export const BOOST_MAX = 12;
 export const BOOST_STEP = 0.5;

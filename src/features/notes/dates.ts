@@ -1,5 +1,3 @@
-// Turning dates into the 'YYYY-MM-DD' day an entry is filed under, and into labels.
-
 function pad(value: number) {
   return String(value).padStart(2, '0');
 }

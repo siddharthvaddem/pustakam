@@ -10,7 +10,7 @@ import {
   type VocabTerm,
 } from './ranking';
 
-// Finds entries by exact words (full-text search) and by meaning (embeddings), merged.
+// Full-text and embedding search, merged.
 
 // Marks matched words in a snippet, so they can be shown in bold.
 export const MATCH_START = '\u0001';
@@ -90,7 +90,7 @@ export async function searchNotes(query: string): Promise<SearchResult[]> {
   });
 }
 
-// Not covered by the search test set, so still the original guess.
+// Related-moments cut-off; not tuned yet.
 const RELATED_MIN_SIMILARITY = 0.69;
 
 // Up to 3 notes from other days closest in meaning to any note on `day`.

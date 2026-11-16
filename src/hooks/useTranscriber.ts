@@ -5,15 +5,13 @@ import MoonshineStt, { type LineEvent } from '../../modules/moonshine-stt';
 import { useModelPath } from '../features/models/ModelGate';
 import { SPEECH_EN } from '../features/models/packs';
 
-// loading -> ready -> starting -> listening -> stopping -> ready ...
-// `error` only happens if the model fails to load.
+// loading -> ready -> starting -> listening -> stopping -> ready; `error` = model failed to load.
 export type Phase = 'loading' | 'ready' | 'starting' | 'listening' | 'stopping' | 'error';
 export type Line = LineEvent;
 
 const MIC_DENIED_MESSAGE = 'Microphone access is off. Turn it on in Settings to transcribe.';
 
-// Moonshine keeps re-sending the line you're speaking as it corrects itself,
-// always with the same id. So: replace the line if we have it, add it if we don't.
+// Moonshine re-sends the current line with the same id as it corrects itself.
 function upsertLine(lines: Line[], line: Line): Line[] {
   const index = lines.findIndex((existing) => existing.id === line.id);
   if (index === -1) {
@@ -31,41 +29,35 @@ function joinLines(lines: Line[]): string {
     .join(' ');
 }
 
-// Android needs us to ask for the mic up front. On iOS the native start() asks.
+// On iOS the native start() asks instead.
 async function requestMicPermission(): Promise<boolean> {
   if (Platform.OS !== 'android') return true;
   const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO);
   return result === PermissionsAndroid.RESULTS.GRANTED;
 }
 
-// The only place the app talks to the native speech module.
 export function useTranscriber() {
   const modelPath = useModelPath(SPEECH_EN);
   const [phase, setPhase] = useState<Phase>('loading');
   const [lines, setLines] = useState<Line[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // The draft: everything recorded since the last send, as plain text you can edit.
-  // Each new recording is added to the end until clear() is called.
+  // Editable draft of everything recorded since the last clear().
   const [text, setText] = useState('');
-  // When the draft's first recording started; null when there's no draft.
   const [startedAt, setStartedAt] = useState<Date | null>(null);
 
-  // Mirrors `lines` so stop() can read the final lines right away, without
-  // waiting for React to re-render.
+  // Lets stop() read the final lines without waiting for a re-render.
   const linesRef = useRef<Line[]>([]);
 
-  // Mic volume arrives many times a second. A shared value lets the orb animate
-  // from it without re-rendering the whole screen each time.
+  // Shared value so many-per-second level updates don't re-render the screen.
   const level = useSharedValue(0);
 
-  // `toggle` is created once, so it reads these through refs to always see the latest.
+  // `toggle` is created once, so it reads these through refs.
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
   const textRef = useRef(text);
   textRef.current = text;
 
-  // Listen to the native module and load the model when the screen mounts.
   useEffect(() => {
     const subscriptions = [
       MoonshineStt.addListener('onLine', (line) => {
@@ -96,7 +88,6 @@ export function useTranscriber() {
       return;
     }
 
-    // The live lines are only this recording's; the draft keeps what came before.
     const now = new Date();
     linesRef.current = [];
     setLines([]);
@@ -104,7 +95,6 @@ export function useTranscriber() {
 
     try {
       await MoonshineStt.start();
-      // A new draft is timed from its first recording.
       if (!textRef.current.trim()) setStartedAt(now);
       setPhase('listening');
     } catch (startError) {
@@ -123,20 +113,18 @@ export function useTranscriber() {
 
   const stop = useCallback(async () => {
     setPhase('stopping');
-    await MoonshineStt.stop(); // resolves after the last line has been sent
+    await MoonshineStt.stop(); // resolves after the last line is sent
 
-    // Each recording goes on its own line at the end of the draft.
     const draft = [textRef.current.trimEnd(), joinLines(linesRef.current)]
       .filter(Boolean)
       .join('\n');
     linesRef.current = [];
     setLines([]);
     setText(draft);
-    if (!draft) setStartedAt(null); // nothing was said
+    if (!draft) setStartedAt(null);
     setPhase('ready');
   }, []);
 
-  // What the orb calls on tap. Taps while loading or stopping are ignored.
   const toggle = useCallback(() => {
     if (phaseRef.current === 'listening') return stop();
     if (phaseRef.current === 'ready') return start();

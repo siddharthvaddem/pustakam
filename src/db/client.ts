@@ -2,11 +2,10 @@ import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { bundledExtensions, openDatabaseSync } from 'expo-sqlite';
 import * as schema from './schema';
 
-// One database file in the app's private storage. The change listener is what
-// lets useLiveQuery re-render screens when rows change.
+// The change listener is what lets useLiveQuery re-render on row changes.
 export const sqlite = openDatabaseSync('pustakam.db', { enableChangeListener: true });
 
-// Vector functions for search. Without them, search is keyword-only.
+// Without sqlite-vec, search is keyword-only.
 function loadVec(): boolean {
   const vec = bundledExtensions['sqlite-vec'];
   if (!vec) return false;
