@@ -1,27 +1,26 @@
-import { StyleSheet } from 'react-native';
-import { colors, fonts, textStyles } from '../../theme';
+import { fonts, makeStyles, textStyles } from '../../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   card: {
     gap: 6,
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 24,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
   },
   pressed: {
     opacity: 0.7,
   },
   when: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
   },
   snippet: {
     ...textStyles.body,
-    color: colors.textPending,
+    color: c.textPending,
   },
   match: {
     fontFamily: fonts.medium,
-    color: colors.text,
+    color: c.text,
   },
-});
+}));

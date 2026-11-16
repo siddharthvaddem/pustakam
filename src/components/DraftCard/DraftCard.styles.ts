@@ -1,9 +1,9 @@
 import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../../theme';
+import { makeStyles, textStyles } from '../../theme';
 
 const BUTTON_SIZE = 36;
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   // Fills the space above the orb and keeps the card at the bottom of it.
   area: {
     flex: 1,
@@ -19,8 +19,8 @@ export const styles = StyleSheet.create({
     maxHeight: '100%',
     borderRadius: 28,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.divider,
-    backgroundColor: colors.surface,
+    borderColor: c.divider,
+    backgroundColor: c.surface,
     overflow: 'hidden',
   },
   // Lets the card hug short drafts and scroll long ones.
@@ -34,7 +34,7 @@ export const styles = StyleSheet.create({
   },
   editor: {
     ...textStyles.transcript,
-    color: colors.text,
+    color: c.text,
     // TextInput adds its own padding on Android.
     padding: 0,
     textAlignVertical: 'top',
@@ -58,7 +58,7 @@ export const styles = StyleSheet.create({
     borderRadius: BUTTON_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.text,
+    backgroundColor: c.text,
   },
   sendDisabled: {
     opacity: 0.3,
@@ -66,4 +66,4 @@ export const styles = StyleSheet.create({
   pressed: {
     opacity: 0.6,
   },
-});
+}));

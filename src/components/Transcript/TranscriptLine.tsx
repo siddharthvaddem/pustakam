@@ -2,7 +2,7 @@ import { memo } from 'react';
 import Animated, { FadeIn, useReducedMotion } from 'react-native-reanimated';
 import type { Line } from '../../hooks/useTranscriber';
 import { Caret } from './Caret';
-import { styles } from './TranscriptLine.styles';
+import { useStyles } from './TranscriptLine.styles';
 
 type TranscriptLineProps = {
   line: Line;
@@ -10,13 +10,13 @@ type TranscriptLineProps = {
   showCaret: boolean;
 };
 
-// One line of speech. Each word is its own element so new words can fade in
-// on their own. memo() stops finished lines from re-rendering while you talk.
+// One element per word so new words fade in alone; memo keeps finished lines from re-rendering.
 export const TranscriptLine = memo(function TranscriptLine({
   line,
   isFinal,
   showCaret,
 }: TranscriptLineProps) {
+  const styles = useStyles();
   const reduceMotion = useReducedMotion();
   const words = line.text.trim().split(/\s+/).filter(Boolean);
 

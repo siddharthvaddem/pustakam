@@ -2,10 +2,10 @@ import { router } from 'expo-router';
 import { Pressable, Text } from 'react-native';
 import { dayLabel, timeLabel } from '../../features/notes/dates';
 import { MATCH_END, MATCH_START, type SearchResult } from '../../features/search/search';
-import { styles } from './NoteResult.styles';
+import { useStyles } from './NoteResult.styles';
 
-// A search result. Tapping opens its day at that entry.
 export function NoteResult({ result }: { result: SearchResult }) {
+  const styles = useStyles();
   const when = `${dayLabel(result.day)} · ${timeLabel(result.startedAt)}`;
   return (
     <Pressable
@@ -27,6 +27,7 @@ export function NoteResult({ result }: { result: SearchResult }) {
 }
 
 function Snippet({ text }: { text: string }) {
+  const styles = useStyles();
   const [first, ...rest] = text.split(MATCH_START);
   return (
     <>

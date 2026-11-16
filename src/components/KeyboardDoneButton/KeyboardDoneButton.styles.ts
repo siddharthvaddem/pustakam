@@ -1,7 +1,6 @@
-import { StyleSheet } from 'react-native';
-import { colors } from '../../theme';
+import { makeStyles } from '../../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   dock: {
     position: 'absolute',
     right: 20,
@@ -13,6 +12,6 @@ export const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
   },
-});
+}));

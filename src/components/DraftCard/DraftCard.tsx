@@ -1,22 +1,23 @@
-import Feather from '@expo/vector-icons/Feather';
 import { useRef } from 'react';
+import { ArrowUpIcon, TrashIcon } from 'phosphor-react-native';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, useReducedMotion } from 'react-native-reanimated';
-import { colors } from '../../theme';
-import { styles } from './DraftCard.styles';
+import { useTheme } from '../../theme';
+import { useStyles } from './DraftCard.styles';
 
 type DraftCardProps = {
   text: string;
   onChangeText: (text: string) => void;
   onSend: () => void;
   onDiscard: () => void;
-  // Hidden while typing, so the card is just your words and the keyboard's ✓.
+  // Hidden while typing; the keyboard's ✓ is enough then.
   showActions: boolean;
 };
 
-// What you said, waiting to be sent: a soft card like a message in a compose box.
-// Discard sits bottom-left and send bottom-right, as far apart as they can be.
+// Discard and send sit in opposite corners, as far apart as they can be.
 export function DraftCard({ text, onChangeText, onSend, onDiscard, showActions }: DraftCardProps) {
+  const styles = useStyles();
+  const { scheme, colors } = useTheme();
   const reduceMotion = useReducedMotion();
   const scroll = useRef<ScrollView>(null);
   const opened = useRef(false);
@@ -35,8 +36,7 @@ export function DraftCard({ text, onChangeText, onSend, onDiscard, showActions }
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          // A long draft opens at its end, where you stopped talking. After that,
-          // typing shouldn't yank the view around.
+          // Open a long draft at its end once; after that, typing shouldn't yank the view.
           onContentSizeChange={() => {
             if (opened.current) return;
             opened.current = true;
@@ -52,7 +52,7 @@ export function DraftCard({ text, onChangeText, onSend, onDiscard, showActions }
             scrollEnabled={false}
             selectionColor={colors.accent}
             cursorColor={colors.accent}
-            keyboardAppearance="dark"
+            keyboardAppearance={scheme}
             accessibilityLabel="Draft, editable"
           />
         </ScrollView>
@@ -66,7 +66,7 @@ export function DraftCard({ text, onChangeText, onSend, onDiscard, showActions }
               hitSlop={12}
               style={({ pressed }) => [styles.discard, pressed && styles.pressed]}
             >
-              <Feather name="trash-2" size={18} color={colors.textMuted} />
+              <TrashIcon size={18} color={colors.textMuted} />
             </Pressable>
             <Pressable
               onPress={onSend}
@@ -80,7 +80,7 @@ export function DraftCard({ text, onChangeText, onSend, onDiscard, showActions }
                 pressed && styles.pressed,
               ]}
             >
-              <Feather name="arrow-up" size={18} color={colors.background} />
+              <ArrowUpIcon size={18} weight="bold" color={colors.background} />
             </Pressable>
           </View>
         )}

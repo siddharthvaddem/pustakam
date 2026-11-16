@@ -1,7 +1,6 @@
-import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../../theme';
+import { makeStyles, textStyles } from '../../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   container: {
     flex: 1,
     width: '100%',
@@ -9,7 +8,7 @@ export const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   content: {
-    // Text sits at the bottom, right above the orb, and grows upward.
+    // Text grows upward from just above the orb.
     flexGrow: 1,
     justifyContent: 'flex-end',
     paddingHorizontal: 24,
@@ -20,16 +19,16 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    // Keeps the row a full line tall when it only holds the caret, so nothing jumps.
+    // A caret-only row stays a full line tall so nothing jumps.
     minHeight: textStyles.transcript.lineHeight,
   },
   draft: {
     ...textStyles.transcript,
-    color: colors.text,
+    color: c.text,
   },
   placeholder: {
     ...textStyles.transcript,
-    color: colors.textMuted,
+    color: c.textMuted,
     textAlign: 'center',
   },
   topFade: {
@@ -46,10 +45,10 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
   },
   jumpButtonText: {
     ...textStyles.label,
-    color: colors.text,
+    color: c.text,
   },
-});
+}));

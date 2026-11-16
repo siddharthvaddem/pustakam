@@ -7,10 +7,11 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { styles } from './Caret.styles';
+import { useStyles } from './Caret.styles';
 
-// Blinking cursor after the last word, like a text editor. Stays solid with Reduce Motion on.
+// Stays solid with Reduce Motion on.
 export function Caret() {
+  const styles = useStyles();
   const reduceMotion = useReducedMotion();
   const opacity = useSharedValue(1);
 

@@ -1,7 +1,6 @@
-import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../../theme';
+import { makeStyles, textStyles } from '../../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -9,13 +8,13 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  // Absolutely centered, so it stays in the middle no matter what's on the left.
+  // Absolute so the left button can't push it off-center.
   title: {
     ...textStyles.title,
-    color: colors.text,
+    color: c.text,
     position: 'absolute',
     left: 0,
     right: 0,
     textAlign: 'center',
   },
-});
+}));

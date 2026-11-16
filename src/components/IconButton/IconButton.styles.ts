@@ -1,18 +1,17 @@
-import { StyleSheet } from 'react-native';
-import { colors } from '../../theme';
+import { makeStyles } from '../../theme';
 
 export const BUTTON_SIZE = 44;
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   button: {
     width: BUTTON_SIZE,
     height: BUTTON_SIZE,
     borderRadius: BUTTON_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
   },
   pressed: {
     opacity: 0.7,
   },
-});
+}));

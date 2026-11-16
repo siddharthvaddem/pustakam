@@ -3,15 +3,14 @@ import type { NativeScrollEvent, NativeSyntheticEvent, ScrollView } from 'react-
 
 const BOTTOM_THRESHOLD = 32;
 
-// Auto-scroll for the transcript: follow new text as it arrives, but stop
-// following if the user scrolls up to read, and show a "jump to latest" button instead.
+// Follows new text until the user scrolls up, then offers a jump-to-latest button.
 export function useStickToBottom(hasContent: boolean) {
   const ref = useRef<ScrollView>(null);
   const isPinned = useRef(true); // a ref, not state: changing it shouldn't re-render
   const [showJumpButton, setShowJumpButton] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // A new recording cleared the text, so go back to the top and start following again.
+  // A new recording cleared the text, so start following from the top again.
   useEffect(() => {
     if (hasContent) return;
     isPinned.current = true;
@@ -28,7 +27,6 @@ export function useStickToBottom(hasContent: boolean) {
     setIsScrolled(contentOffset.y > 4);
   }
 
-  // Runs whenever new words make the text taller.
   function onContentSizeChange() {
     if (isPinned.current) {
       ref.current?.scrollToEnd({ animated: true });

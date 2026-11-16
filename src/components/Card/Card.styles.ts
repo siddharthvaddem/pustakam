@@ -1,16 +1,16 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '../../theme';
+import { makeStyles } from '../../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   card: {
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
   },
-  // Thin line between rows, inset to line up with the content.
+  // Inset to line up with the content.
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.divider,
+    backgroundColor: c.divider,
     marginHorizontal: 20,
   },
-});
+}));

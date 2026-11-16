@@ -1,23 +1,24 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { Line } from '../../hooks/useTranscriber';
-import { colors } from '../../theme';
+import { useTheme } from '../../theme';
 import { Caret } from './Caret';
-import { styles } from './Transcript.styles';
+import { useStyles } from './Transcript.styles';
 import { TranscriptLine } from './TranscriptLine';
 import { useStickToBottom } from './useStickToBottom';
 
 type TranscriptProps = {
-  // What's being said right now.
+  // The current recording.
   lines: Line[];
   listening: boolean;
-  // The draft so far, shown above the new words when you record more before sending.
+  // The draft so far, shown above the new words.
   text: string;
 };
 
-// The live text above the orb, styled after Monkeytype: dim while Moonshine is
-// still guessing, bright once a line is final, with a blinking caret at the end.
+// Monkeytype-style: dim while Moonshine is guessing, bright once a line is final.
 export function Transcript({ lines, listening, text }: TranscriptProps) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const scroll = useStickToBottom(lines.length > 0 || text.length > 0);
   const lastIndex = lines.length - 1;
   const showLive = listening || lines.length > 0;
@@ -41,12 +42,11 @@ export function Transcript({ lines, listening, text }: TranscriptProps) {
                 <TranscriptLine
                   key={line.id}
                   line={line}
-                  // Moonshine sometimes never marks an older line complete, so only the last one can be pending.
+                  // Moonshine sometimes never completes older lines, so only the last can be pending.
                   isFinal={line.isComplete || index < lastIndex}
                   showCaret={listening && index === lastIndex}
                 />
               ))}
-              {/* Before the first word, just the caret. */}
               {listening && lines.length === 0 && <Caret />}
             </View>
           </>
@@ -55,7 +55,7 @@ export function Transcript({ lines, listening, text }: TranscriptProps) {
         )}
       </ScrollView>
 
-      {/* Fades out text that scrolled off the top, so you can tell there's more above. */}
+      {/* Hints there's more text above. */}
       {scroll.isScrolled && (
         <LinearGradient
           style={styles.topFade}
@@ -64,7 +64,6 @@ export function Transcript({ lines, listening, text }: TranscriptProps) {
         />
       )}
 
-      {/* Shown when you've scrolled up and new words arrive below. */}
       {scroll.showJumpButton && (
         <Pressable
           onPress={scroll.jumpToLatest}

@@ -1,9 +1,9 @@
 import { Children, Fragment, type ReactNode } from 'react';
 import { View } from 'react-native';
-import { styles } from './Card.styles';
+import { useStyles } from './Card.styles';
 
-// A rounded group of rows with thin dividers between them, as on the settings screens.
 export function Card({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   const rows = Children.toArray(children);
   return (
     <View style={styles.card}>
