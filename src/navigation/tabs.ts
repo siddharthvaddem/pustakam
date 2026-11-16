@@ -11,4 +11,5 @@ export type Tab = {
 export const TABS: Tab[] = [
   { name: 'index', href: '/', title: 'Record' },
   { name: 'notes', href: '/notes', title: 'Notes' },
+  { name: 'graph', href: '/graph', title: 'Graph' },
 ];

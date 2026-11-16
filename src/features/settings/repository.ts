@@ -9,6 +9,7 @@ export const SETTING_DEFAULTS = {
   theme: 'system', // 'system' | 'light' | 'dark'
   accent: 'amber', // see ACCENTS in theme.ts
   haptics: 'on', // 'on' | 'off'
+  graphHint: 'unseen', // 'unseen' | 'seen'
 };
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;
