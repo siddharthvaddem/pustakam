@@ -30,12 +30,7 @@ class PackFile : Record {
 class DownloadException(code: String, message: String, cause: Throwable? = null) :
   CodedException(code, message, cause)
 
-// Keeps model files on the device, in noBackupFilesDir (outside Auto Backup).
-//
-// Same design as the iOS version: each file downloads to `<name>.part`, is hashed as it
-// arrives, and is renamed into place only once its SHA-256 matches. Interrupted files
-// resume with an HTTP Range request. A `.installed` marker holding the version is
-// written last, so a pack only counts as installed when every file is in.
+// Files resume into `<name>.part` via HTTP Range and move into place once the SHA-256 matches.
 class ModelStoreModule : Module() {
   private val context: Context
     get() = appContext.reactContext ?: throw Exceptions.ReactContextLost()
@@ -82,10 +77,10 @@ class ModelStoreModule : Module() {
     val dir = packDirectory(packId)
     if (isInstalled(dir, version)) return dir.absolutePath
 
-    // Older versions of the app copied the bundled model here; it's not used any more.
+    // Older builds copied a bundled model here; no longer used.
     File(context.filesDir, "models").deleteRecursively()
 
-    // Files left from another version can't be trusted to match, so that pack starts over.
+    // Files from another version can't be trusted, so the pack starts over.
     val versionFile = File(dir, ".version")
     if (!versionFile.exists() || versionFile.readText() != version) {
       dir.deleteRecursively()
@@ -107,7 +102,7 @@ class ModelStoreModule : Module() {
       var done = 0L
       for (file in files) {
         val dest = File(dir, file.name)
-        // Only verified files are ever renamed into place, so one that exists is good.
+        // Only verified files get renamed into place, so an existing one is good.
         if (!dest.exists()) {
           val base = done
           fetch(file, dest, packId) { received -> reporter.report(base + received) }
@@ -116,6 +111,7 @@ class ModelStoreModule : Module() {
         reporter.report(done, force = true)
       }
 
+      // Written last, so a pack only counts as installed once every file is in.
       File(dir, ".installed").writeText(version)
       return dir.absolutePath
     } finally {
@@ -128,7 +124,7 @@ class ModelStoreModule : Module() {
     val digest = MessageDigest.getInstance("SHA-256")
     val buffer = ByteArray(64 * 1024)
 
-    // Hash what's already on disk so a resumed file still gets one digest over all of it.
+    // Hash bytes already on disk so a resumed file gets one digest over all of it.
     var existing = 0L
     if (part.exists()) {
       FileInputStream(part).use { input ->
@@ -161,12 +157,12 @@ class ModelStoreModule : Module() {
       val append = when (status) {
         HttpURLConnection.HTTP_PARTIAL -> true
         HttpURLConnection.HTTP_OK -> {
-          // The server sent the whole file instead of the rest of it, so start this file over.
+          // Server ignored the Range and sent the whole file, so start over.
           digest.reset()
           existing = 0
           false
         }
-        416 -> null // Nothing past what we have: the part file is complete.
+        416 -> null // nothing past what we have, so the part is complete
         else -> throw DownloadException("E_NETWORK", "The server answered $status for ${file.name}")
       }
 
@@ -216,7 +212,7 @@ class ModelStoreModule : Module() {
     }
   }
 
-  // Models are big and can always be downloaded again, so keep them out of backups.
+  // Big and re-downloadable, so keep them out of backups.
   private fun modelsRoot(): File = File(context.noBackupFilesDir, "models").apply { mkdirs() }
 
   private fun packDirectory(packId: String): File = File(modelsRoot(), packId)
@@ -238,7 +234,7 @@ class ModelStoreModule : Module() {
   }
 }
 
-// Sends progress at most ~10 times a second so JS isn't flooded.
+// At most ~10 events a second so JS isn't flooded.
 private class ProgressReporter(private val send: (Long) -> Unit) {
   private var lastSent = 0L
 

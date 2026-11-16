@@ -13,7 +13,6 @@ import expo.modules.kotlin.modules.ModuleDefinition
 class LiteRtLmException(code: String, message: String, cause: Throwable? = null) :
   CodedException(code, message, cause)
 
-// Runs the embedding model with Google's LiteRT-LM.
 class LiteRtLmModule : Module() {
   private val lock = Any()
   private var engine: EmbeddingEngine? = null
@@ -49,13 +48,6 @@ class LiteRtLmModule : Module() {
         } catch (e: Throwable) {
           throw LiteRtLmException("E_EMBED", "Couldn't embed the text: ${e.message}", e)
         }
-      }
-    }
-
-    AsyncFunction("closeEmbedder") {
-      synchronized(lock) {
-        engine?.close()
-        engine = null
       }
     }
   }

@@ -1,6 +1,6 @@
 import ExpoModulesCore
 
-// Runs the embedding model with Google's LiteRT-LM (Swift API copied into ios/LiteRTLM).
+// LiteRT-LM's Swift API is vendored in ios/LiteRTLM.
 public final class LiteRtLmModule: Module {
   private let embedder = Embedder()
 
@@ -13,10 +13,6 @@ public final class LiteRtLmModule: Module {
 
     AsyncFunction("embed") { (texts: [String]) async throws -> [[Float]] in
       try await self.embedder.embed(texts)
-    }
-
-    AsyncFunction("closeEmbedder") { () async in
-      await self.embedder.close()
     }
   }
 }

@@ -21,32 +21,25 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 import kotlin.math.sqrt
 
-// Bridge between the app's JS and Moonshine on Android. Same job as the iOS
-// version: load the model, record from the mic, feed Moonshine, send text back.
-//
-// The recorder is created ahead of time and reused so a tap starts recording
-// instantly instead of losing the first words.
+// Recorder is created once and reused; creating it on tap lost the first words.
 class MoonshineSttModule : Module() {
   private val context: Context
     get() = appContext.reactContext ?: throw Exceptions.ReactContextLost()
 
-  // Moonshine only ever runs on this one background thread. The mic thread just
-  // queues audio for it, so recording never waits on transcription.
+  // Moonshine runs only here; the mic thread just queues audio so it never waits on it.
   private val worker = Executors.newSingleThreadExecutor()
   private val pending = ConcurrentLinkedQueue<FloatArray>()
-  // Folder with the downloaded model files (see modules/model-store). Set by load().
   private var modelPath: String? = null
   private var transcriber: Transcriber? = null
   private var record: AudioRecord? = null
   private var captureThread: Thread? = null
   @Volatile private var listening = false
 
-  // Keyword boosting, touched only on the worker. Kept here so every (re)load of
-  // the model uses the latest values.
+  // Worker-only. Kept here so every model reload picks up the latest values.
   private var keyterms: List<String> = emptyList()
-  // Same as the app's default (BOOST_DEFAULT), so the first load doesn't need a reload.
+  // Matches BOOST_DEFAULT in JS so the first load needs no reload.
   private var keytermBoost = 4.0
-  // The boost can only change by reloading the model, which waits until recording stops.
+  // Boost changes need a model reload, deferred until recording stops.
   private var reloadPending = false
 
   override fun definition() = ModuleDefinition {
@@ -68,7 +61,7 @@ class MoonshineSttModule : Module() {
       }
     }
 
-    // Words to lean towards. Applies to the next bit of speech, even mid-recording.
+    // Applies to the next utterance, even mid-recording.
     AsyncFunction("setKeyterms") { terms: List<String>, promise: Promise ->
       worker.execute {
         keyterms = terms
@@ -81,8 +74,7 @@ class MoonshineSttModule : Module() {
       }
     }
 
-    // How strongly to lean towards them. Moonshine only reads this when the model
-    // loads, so changing it reloads the model (after the current recording, if any).
+    // Moonshine reads the boost only at load, so this reloads the model after any recording.
     AsyncFunction("setKeytermBoost") { boost: Double, promise: Promise ->
       worker.execute {
         if (boost != keytermBoost) {
@@ -168,7 +160,6 @@ class MoonshineSttModule : Module() {
   private fun hasMicPermission() =
     ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
-  // Create the recorder before the first tap, once the user has allowed mic access.
   private fun prewarmIfPermitted() {
     if (!hasMicPermission()) return
     try {
@@ -196,7 +187,6 @@ class MoonshineSttModule : Module() {
     return recorder
   }
 
-  // A background thread reads the mic in small chunks and queues them for Moonshine.
   private fun startListening() {
     if (listening) return
     loadIfNeeded()
@@ -244,7 +234,6 @@ class MoonshineSttModule : Module() {
     record = null
   }
 
-  // Gives Moonshine everything recorded since the last call, as one batch.
   private fun drain() {
     var total = 0
     val chunks = ArrayList<FloatArray>()
@@ -267,14 +256,14 @@ class MoonshineSttModule : Module() {
     }
   }
 
-  // Loudness of one chunk (root mean square), used to animate the orb.
+  // RMS loudness for the orb.
   private fun emitLevel(samples: FloatArray) {
     var sum = 0.0
     for (s in samples) sum += s * s
     sendEvent("onLevel", mapOf("level" to sqrt(sum / samples.size)))
   }
 
-  // Line ids are 64-bit, which JS numbers can't hold exactly, so they go as strings.
+  // Line ids are 64-bit, too big for JS numbers, so they go as strings.
   private fun sendLine(line: TranscriptLine) {
     sendEvent("onLine", mapOf(
       "id" to line.id.toULong().toString(),

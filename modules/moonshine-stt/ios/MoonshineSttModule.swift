@@ -1,21 +1,13 @@
 import AVFoundation
 import ExpoModulesCore
 
-// Bridge between the app's JS and Moonshine on iOS.
-//
-// Flow: JS calls load() once, then start()/stop() per recording. While recording,
-// mic audio is converted to 16 kHz mono and fed to Moonshine, which sends back
-// text through the onLine event. We also send the mic volume (onLevel) for the orb.
-//
-// The mic is set up ahead of time and reused between recordings. Setting it up
-// on tap takes a few hundred ms, and anything said in that time was being lost.
+// Mic is set up once and reused; setting it up on tap lost the first words.
 public final class MoonshineSttModule: Module {
   private static let targetFormat = AVAudioFormat(
     commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: false)!
 
-  // All the state below is only touched on this one queue, so no locks are needed for it.
+  // State below is only touched on this queue, so no locks.
   private let audioQueue = DispatchQueue(label: "memorybank.moonshine.audio", qos: .userInitiated)
-  // Folder with the downloaded model files (see modules/model-store). Set by load().
   private var modelPath: String?
   private var transcriber: Transcriber?
   private var stream: Stream?
@@ -24,15 +16,14 @@ public final class MoonshineSttModule: Module {
   private var sessionActive = false
   private var isListening = false
 
-  // Keyword boosting. Kept here so every (re)load of the model uses the latest values.
+  // Kept here so every model reload picks up the latest values.
   private var keyterms: [String] = []
-  // Same as the app's default (BOOST_DEFAULT), so the first load doesn't need a reload.
+  // Matches BOOST_DEFAULT in JS so the first load needs no reload.
   private var keytermBoost: Float = 4.0
-  // The boost can only change by reloading the model, which waits until recording stops.
+  // Boost changes need a model reload, deferred until recording stops.
   private var reloadPending = false
 
-  // The mic callback hands audio over here and returns right away. If it waited
-  // for Moonshine to finish transcribing, iOS would drop audio.
+  // Mic callback only queues samples here; blocking on Moonshine makes iOS drop audio.
   private let pendingLock = NSLock()
   private var pending: [Float] = []
 
@@ -55,7 +46,7 @@ public final class MoonshineSttModule: Module {
       }
     }
 
-    // Words to lean towards. Applies to the next bit of speech, even mid-recording.
+    // Applies to the next utterance, even mid-recording.
     AsyncFunction("setKeyterms") { (terms: [String], promise: Promise) in
       self.audioQueue.async {
         self.keyterms = terms
@@ -68,8 +59,7 @@ public final class MoonshineSttModule: Module {
       }
     }
 
-    // How strongly to lean towards them. Moonshine only reads this when the model
-    // loads, so changing it reloads the model (after the current recording, if any).
+    // Moonshine reads the boost only at load, so this reloads the model after any recording.
     AsyncFunction("setKeytermBoost") { (boost: Double, promise: Promise) in
       self.audioQueue.async {
         let boost = Float(boost)
@@ -139,7 +129,6 @@ public final class MoonshineSttModule: Module {
     }
   }
 
-  // Loads the model from the folder load() was given.
   private func loadIfNeeded() throws {
     guard transcriber == nil else { return }
     guard let modelPath, FileManager.default.fileExists(atPath: modelPath) else {
@@ -171,8 +160,7 @@ public final class MoonshineSttModule: Module {
     }
   }
 
-  // Get the mic ready before the first tap. Skipped until the user has granted mic access,
-  // because before that iOS doesn't tell us the mic's format.
+  // Needs mic permission first; iOS hides the mic format until then.
   private func prewarmIfPermitted() {
     guard AVAudioSession.sharedInstance().recordPermission == .granted else { return }
     do {
@@ -186,8 +174,7 @@ public final class MoonshineSttModule: Module {
   private func activateSession() throws {
     guard !sessionActive else { return }
     let session = AVAudioSession.sharedInstance()
-    // No `.allowBluetooth`: switching AirPods to their mic takes seconds and
-    // swallows the first words. `.mixWithOthers` keeps other apps' audio playing.
+    // No .allowBluetooth: switching AirPods to their mic takes seconds and eats the first words.
     try session.setCategory(.playAndRecord, mode: .measurement, options: [.mixWithOthers])
     try? session.setPreferredIOBufferDuration(0.02)
     try session.setActive(true)
@@ -200,8 +187,6 @@ public final class MoonshineSttModule: Module {
     sessionActive = false
   }
 
-  // Builds the audio engine once and reuses it. Its tap receives mic buffers in the
-  // mic's native format, which we convert to what Moonshine expects.
   private func preparedEngine() throws -> AVAudioEngine {
     if let engine { return engine }
     let engine = AVAudioEngine()
@@ -224,8 +209,7 @@ public final class MoonshineSttModule: Module {
     }
     engine.prepare()
 
-    // Plugging in headphones or taking a call breaks the engine, so rebuild it when that happens.
-
+    // Headphone changes and calls break the engine, so rebuild it.
     engineObserver = NotificationCenter.default.addObserver(
       forName: .AVAudioEngineConfigurationChange, object: engine, queue: nil
     ) { [weak self] _ in
@@ -279,7 +263,6 @@ public final class MoonshineSttModule: Module {
     if reloadPending { reloadModel() }
   }
 
-  // Hands everything the mic has captured so far to Moonshine.
   private func drain() {
     pendingLock.lock()
     let batch = pending
@@ -293,7 +276,7 @@ public final class MoonshineSttModule: Module {
     }
   }
 
-  // Resamples one mic buffer (usually 48 kHz) to 16 kHz mono.
+  // Usually 48 kHz in, 16 kHz mono out.
   private static func convert(_ buffer: AVAudioPCMBuffer, with converter: AVAudioConverter) -> [Float]? {
     let ratio = targetFormat.sampleRate / buffer.format.sampleRate
     let capacity = AVAudioFrameCount((Double(buffer.frameLength) * ratio).rounded(.up)) + 1
@@ -313,7 +296,7 @@ public final class MoonshineSttModule: Module {
     return Array(UnsafeBufferPointer(start: data[0], count: Int(out.frameLength)))
   }
 
-  // Loudness of one buffer (root mean square), used to animate the orb.
+  // RMS loudness for the orb.
   private func emitLevel(_ buffer: AVAudioPCMBuffer) {
     guard let data = buffer.floatChannelData else { return }
     let count = Int(buffer.frameLength)
@@ -323,7 +306,7 @@ public final class MoonshineSttModule: Module {
     sendEvent("onLevel", ["level": sqrt(sum / Float(count))])
   }
 
-  // Passes Moonshine's events to JS. Line ids are 64-bit, which JS numbers can't hold, so they go as strings.
+  // Line ids are 64-bit, too big for JS numbers, so they go as strings.
   private func forward(_ event: TranscriptEvent) {
     switch event {
     case let failure as TranscriptError:

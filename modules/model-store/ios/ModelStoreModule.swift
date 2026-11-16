@@ -9,13 +9,7 @@ struct PackFile: Record {
   @Field var size: Double = 0
 }
 
-// Keeps model files on the device, in Application Support (excluded from iCloud backup).
-//
-// A pack is a folder of files. Each file downloads to `<name>.part`, gets hashed as it
-// arrives, and is renamed into place only once its SHA-256 matches. If the connection
-// drops or the app is closed, the part file keeps its bytes and the next attempt
-// resumes from there with an HTTP Range request. A `.installed` marker holding the
-// version is written last, so a pack only counts as installed when every file is in.
+// Files resume into `<name>.part` via HTTP Range and move into place once the SHA-256 matches.
 public final class ModelStoreModule: Module {
   private let lock = NSLock()
   private var activeTasks: [String: URLSessionDataTask] = [:]
@@ -57,7 +51,7 @@ public final class ModelStoreModule: Module {
     let dir = try Self.packDirectory(packId)
     if Self.isInstalled(dir, version: version) { return dir.path }
 
-    // Files left from another version can't be trusted to match, so that pack starts over.
+    // Files from another version can't be trusted, so the pack starts over.
     let versionFile = dir.appendingPathComponent(".version")
     if (try? String(contentsOf: versionFile, encoding: .utf8)) != version {
       try? fm.removeItem(at: dir)
@@ -82,7 +76,7 @@ public final class ModelStoreModule: Module {
     var done: Int64 = 0
     for file in files {
       let dest = dir.appendingPathComponent(file.name)
-      // Only verified files are ever renamed into place, so one that exists is good.
+      // Only verified files get renamed into place, so an existing one is good.
       if !fm.fileExists(atPath: dest.path) {
         let base = done
         try await fetch(file, to: dest, packId: packId) { received in
@@ -93,6 +87,7 @@ public final class ModelStoreModule: Module {
       reporter.report(done, force: true)
     }
 
+    // Written last, so a pack only counts as installed once every file is in.
     try version.write(
       to: dir.appendingPathComponent(".installed"), atomically: true, encoding: .utf8)
     return dir.path
@@ -161,14 +156,12 @@ public final class ModelStoreModule: Module {
     }
   }
 
-  // MARK: - Paths
-
   private static func modelsRoot() throws -> URL {
     let support = try FileManager.default.url(
       for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
     var root = support.appendingPathComponent("models", isDirectory: true)
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-    // Models are big and can always be downloaded again, so keep them out of iCloud backups.
+    // Big and re-downloadable, so keep them out of iCloud backups.
     var values = URLResourceValues()
     values.isExcludedFromBackup = true
     try root.setResourceValues(values)
@@ -183,8 +176,6 @@ public final class ModelStoreModule: Module {
     let marker = dir.appendingPathComponent(".installed")
     return (try? String(contentsOf: marker, encoding: .utf8)) == version
   }
-
-  // MARK: - Helpers
 
   private static func keepScreenAwake(_ on: Bool) {
     DispatchQueue.main.async { UIApplication.shared.isIdleTimerDisabled = on }
@@ -211,7 +202,7 @@ public final class ModelStoreModule: Module {
   }
 }
 
-// Sends progress at most ~10 times a second so JS isn't flooded.
+// At most ~10 events a second so JS isn't flooded.
 private final class ProgressReporter {
   private let send: (Int64) -> Void
   private let lock = NSLock()
@@ -231,8 +222,7 @@ private final class ProgressReporter {
   }
 }
 
-// Streams one file into its `.part` file, hashing every byte (including any already on
-// disk from an earlier attempt) so the final digest covers the whole file.
+// Hashes bytes already on disk too, so the digest covers the whole file.
 private final class PartDownload: NSObject, URLSessionDataDelegate {
   enum Failure: Error {
     case httpStatus(Int)
@@ -245,7 +235,7 @@ private final class PartDownload: NSObject, URLSessionDataDelegate {
   private var hasher = SHA256()
   private var received: Int64 = 0
   private var failure: Failure?
-  // The server said there's nothing past what we have (HTTP 416): the part is complete.
+  // HTTP 416: nothing past what we have, so the part is complete.
   private var alreadyComplete = false
   private(set) var existing: Int64 = 0
   var completion: ((Error?) -> Void)?
@@ -285,7 +275,7 @@ private final class PartDownload: NSObject, URLSessionDataDelegate {
         handle = try FileHandle(forWritingTo: part)
         try handle?.seekToEnd()
       case 200:
-        // The server sent the whole file instead of the rest of it, so start this file over.
+        // Server ignored the Range and sent the whole file, so start over.
         try Data().write(to: part)
         hasher = SHA256()
         existing = 0

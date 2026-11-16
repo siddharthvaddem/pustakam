@@ -1,5 +1,5 @@
 export type LineEvent = {
-  /** String because native line ids are 64-bit. */
+  /** String because native ids are 64-bit. */
   id: string;
   text: string;
   isComplete: boolean;
