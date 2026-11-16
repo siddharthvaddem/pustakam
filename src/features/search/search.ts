@@ -25,7 +25,7 @@ export type SearchResult = {
 
 type EntryRow = { id: number; day: string; startedAt: number; text: string };
 
-function preview(text: string): string {
+export function preview(text: string): string {
   return text.length > 120 ? `${text.slice(0, 120).trimEnd()}…` : text;
 }
 
