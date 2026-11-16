@@ -1,5 +1,5 @@
 import { Skia, useClock } from '@shopify/react-native-skia';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   Easing,
   SharedValue,
@@ -12,38 +12,41 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 import type { Phase } from '../../hooks/useTranscriber';
-import { orbColors } from '../../theme';
+import { type OrbColors, useTheme } from '../../theme';
 
 const tiltSpring = { damping: 14, stiffness: 120 };
 
-// Shaders want colors as [r, g, b] in 0..1, not hex strings.
+// Shaders want [r, g, b] in 0..1, not hex.
 const toRgb = (hex: string) => Array.from(Skia.Color(hex).slice(0, 3));
-const palette = {
-  deep: toRgb(orbColors.deep),
-  base: toRgb(orbColors.base),
-  lit: toRgb(orbColors.lit),
-  tint: toRgb(orbColors.tint),
-  rim: toRgb(orbColors.rim),
-  sheen: toRgb(orbColors.sheen),
-  halo: toRgb(orbColors.halo),
-};
+function toPalette(orb: OrbColors) {
+  return {
+    deep: toRgb(orb.deep),
+    base: toRgb(orb.base),
+    lit: toRgb(orb.lit),
+    tint: toRgb(orb.tint),
+    rim: toRgb(orb.rim),
+    sheen: toRgb(orb.sheen),
+    halo: toRgb(orb.halo),
+  };
+}
 
 const clamp = (value: number) => Math.max(-1, Math.min(1, value));
 
-// Turns app state (phase, mic level, touches) into the numbers the orb shader reads.
-// Everything here animates on the UI thread, so React never re-renders for it.
+// Everything animates on the UI thread, so React never re-renders for it.
 export function useOrbUniforms(phase: Phase, level: SharedValue<number>, size: number) {
   const reduceMotion = useReducedMotion();
   const clock = useClock();
+  const { orb, scheme } = useTheme();
+  const palette = useMemo(() => toPalette(orb), [orb]);
+  const light = scheme === 'light' ? 1 : 0;
 
   const active = useSharedValue(0); // 0 = idle, 1 = listening
   const ready = useSharedValue(0); // 0 = model still loading
-  const pulse = useSharedValue(0); // quick flash when recording starts
+  const pulse = useSharedValue(0); // flash when recording starts
   const smoothLevel = useSharedValue(0);
   const tiltX = useSharedValue(0);
   const tiltY = useSharedValue(0);
 
-  // Ease between states instead of snapping when the phase changes.
   useEffect(() => {
     const listening = phase === 'listening' || phase === 'starting';
     const loaded = phase !== 'loading' && phase !== 'error';
@@ -62,17 +65,17 @@ export function useOrbUniforms(phase: Phase, level: SharedValue<number>, size: n
     }
   }, [phase, reduceMotion, active, ready, pulse]);
 
-  // Raw mic level is jumpy and small (about 0..0.25 when talking).
-  // Boost it, and follow it quickly going up but slowly coming down so the orb doesn't flicker.
+  // Raw level is ~0..0.25 and jumpy: boost it, rise fast, fall slow so the orb doesn't flicker.
   useFrameCallback(() => {
     const target = Math.min(1, Math.sqrt(level.value) * 2.2);
     const rate = target > smoothLevel.value ? 0.35 : 0.08;
     smoothLevel.value += (target - smoothLevel.value) * rate;
   });
 
-  // Recomputed every frame. Names must match the `uniform`s in shader.ts.
+  // Keys must match the `uniform`s in shader.ts.
   const uniforms = useDerivedValue(() => ({
     ...palette,
+    light,
     resolution: [size, size],
     time: reduceMotion ? 0 : clock.value / 1000, // frozen time = no motion
     level: reduceMotion ? 0 : smoothLevel.value,
@@ -82,7 +85,7 @@ export function useOrbUniforms(phase: Phase, level: SharedValue<number>, size: n
     tilt: [tiltX.value, tiltY.value],
   }));
 
-  // Moves the highlight toward the finger. x/y are in points inside the orb.
+  // x/y in points inside the orb.
   function tiltTowards(x: number, y: number) {
     if (reduceMotion) return;
     tiltX.value = withSpring(clamp((x / size) * 2 - 1), tiltSpring);

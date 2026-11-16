@@ -1,5 +1,5 @@
 import { Canvas, Fill, Shader } from '@shopify/react-native-skia';
-import * as Haptics from 'expo-haptics';
+import { ImpactFeedbackStyle } from 'expo-haptics';
 import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native';
 import Animated, {
   Easing,
@@ -9,6 +9,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { haptics } from '../../features/appearance/haptics';
 import type { Phase } from '../../hooks/useTranscriber';
 import { orbShader } from './shader';
 import { useOrbUniforms } from './useOrbUniforms';
@@ -20,7 +21,6 @@ type OrbProps = {
   onPress: () => void;
 };
 
-// What VoiceOver / TalkBack reads out for the orb in each phase.
 const accessibilityLabels: Record<Phase, string> = {
   loading: 'Loading speech model',
   ready: 'Start listening',
@@ -32,8 +32,7 @@ const accessibilityLabels: Record<Phase, string> = {
 
 const pressTiming = { duration: 150, easing: Easing.out(Easing.quad) };
 
-// The big tappable orb. The look lives in shader.ts, the animation in useOrbUniforms.ts;
-// this file just handles touches.
+// Look lives in shader.ts, animation in useOrbUniforms.ts; this just handles touches.
 export function Orb({ phase, level, size, onPress }: OrbProps) {
   const reduceMotion = useReducedMotion();
   const { uniforms, tiltTowards, resetTilt } = useOrbUniforms(phase, level, size);
@@ -61,9 +60,7 @@ export function Orb({ phase, level, size, onPress }: OrbProps) {
   }
 
   function handlePress() {
-    Haptics.impactAsync(
-      listening ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Medium,
-    );
+    haptics.impact(listening ? ImpactFeedbackStyle.Light : ImpactFeedbackStyle.Medium);
     onPress();
   }
 
