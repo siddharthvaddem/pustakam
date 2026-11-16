@@ -1,22 +1,21 @@
-import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../../theme';
+import { makeStyles, textStyles } from '../../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
     paddingHorizontal: 12,
   },
   appName: {
     ...textStyles.appName,
-    color: colors.text,
+    color: c.text,
     paddingHorizontal: 12,
     paddingTop: 24,
     paddingBottom: 32,
   },
   sectionLabel: {
     ...textStyles.label,
-    color: colors.textMuted,
+    color: c.textMuted,
     textTransform: 'uppercase',
     paddingHorizontal: 12,
     paddingBottom: 8,
@@ -30,15 +29,15 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
   },
   itemActive: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
   },
   itemLabel: {
     ...textStyles.body,
-    color: colors.text,
+    color: c.text,
   },
   footer: {
     marginTop: 'auto',
     flexDirection: 'row',
     paddingHorizontal: 12,
   },
-});
+}));

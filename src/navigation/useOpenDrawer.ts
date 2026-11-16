@@ -1,6 +1,6 @@
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 
-// Opens the side menu from any screen inside it (the action bubbles up to the drawer).
+// The action bubbles up to the drawer from any screen inside it.
 export function useOpenDrawer() {
   const navigation = useNavigation();
   return () => navigation.dispatch(DrawerActions.openDrawer());

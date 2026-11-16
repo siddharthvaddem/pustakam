@@ -1,15 +1,16 @@
-import Feather from '@expo/vector-icons/Feather';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { router, usePathname } from 'expo-router';
+import { GearSixIcon } from 'phosphor-react-native';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TABS } from '../../navigation/tabs';
-import { colors } from '../../theme';
+import { useTheme } from '../../theme';
 import { IconButton } from '../IconButton/IconButton';
-import { styles } from './DrawerContent.styles';
+import { useStyles } from './DrawerContent.styles';
 
-// What's inside the side menu: the app name, the tabs, and settings at the bottom.
 export function DrawerContent({ navigation }: DrawerContentComponentProps) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
 
@@ -33,15 +34,14 @@ export function DrawerContent({ navigation }: DrawerContentComponentProps) {
             accessibilityState={{ selected: active }}
             style={[styles.item, active && styles.itemActive]}
           >
-            <Feather name={tab.icon} size={22} color={colors.text} />
-            <Text style={styles.itemLabel}>{tab.title}</Text>
+            <Text style={[styles.itemLabel, active && { color: colors.accent }]}>{tab.title}</Text>
           </Pressable>
         );
       })}
 
       <View style={styles.footer}>
         <IconButton
-          icon="settings"
+          icon={GearSixIcon}
           accessibilityLabel="Settings"
           onPress={() => open('/settings')}
         />
