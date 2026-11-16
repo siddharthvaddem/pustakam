@@ -1,10 +1,9 @@
-import { StyleSheet } from 'react-native';
-import { colors, textStyles } from '../theme';
+import { makeStyles, textStyles } from '../theme';
 
-export const styles = StyleSheet.create({
+export const useStyles = makeStyles((c) => ({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
   },
   content: {
     gap: 16,
@@ -20,15 +19,15 @@ export const styles = StyleSheet.create({
     paddingVertical: 18,
   },
   rowPressed: {
-    backgroundColor: colors.divider,
+    backgroundColor: c.divider,
   },
   label: {
     ...textStyles.body,
-    color: colors.text,
+    color: c.text,
     flex: 1,
   },
   detail: {
     ...textStyles.body,
-    color: colors.textMuted,
+    color: c.textMuted,
   },
-});
+}));

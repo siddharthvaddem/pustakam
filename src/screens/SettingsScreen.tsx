@@ -1,66 +1,92 @@
-import Feather from '@expo/vector-icons/Feather';
-import { type Href, router } from 'expo-router';
-import type { ComponentProps } from 'react';
-import { Pressable, ScrollView, Text } from 'react-native';
+import { router } from 'expo-router';
+import {
+  CaretLeftIcon,
+  CaretRightIcon,
+  DownloadSimpleIcon,
+  DropIcon,
+  type Icon,
+  LightningIcon,
+} from 'phosphor-react-native';
+import { useState } from 'react';
+import { Alert, Pressable, ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '../components/Card/Card';
 import { TopBar } from '../components/TopBar/TopBar';
-import { DEV_TOOLS } from '../dev/enabled';
 import { useKeyterms } from '../features/keyterms/useKeyterms';
-import { colors } from '../theme';
-import { styles } from './SettingsScreen.styles';
+import { exportNotes } from '../features/notes/exportNotes';
+import { useTheme } from '../theme';
+import { useStyles } from './SettingsScreen.styles';
 
 type Row = {
-  icon: ComponentProps<typeof Feather>['name'];
+  icon: Icon;
   label: string;
-  // Small grey value shown before the chevron, like how many keywords there are.
+  // Grey value before the chevron, e.g. the keyword count.
   detail?: string;
-  // Rows without a destination are placeholders for features that don't exist yet.
-  href?: Href;
+  onPress: () => void;
 };
 
-function SettingsRow({ icon, label, detail, href }: Row) {
+function SettingsRow({ icon: RowIcon, label, detail, onPress }: Row) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={href ? () => router.push(href) : undefined}
+      onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
-      <Feather name={icon} size={22} color={colors.text} />
+      <RowIcon size={22} color={colors.text} />
       <Text style={styles.label}>{label}</Text>
       {detail ? <Text style={styles.detail}>{detail}</Text> : null}
-      <Feather name="chevron-right" size={20} color={colors.textMuted} />
+      <CaretRightIcon size={20} color={colors.textMuted} />
     </Pressable>
   );
 }
 
 export function SettingsScreen() {
+  const styles = useStyles();
   const keytermCount = useKeyterms().length;
+  const [exporting, setExporting] = useState(false);
+
+  async function exportAll() {
+    setExporting(true);
+    try {
+      const days = await exportNotes();
+      if (days === 0) Alert.alert('No notes yet', 'Record something first, then export.');
+    } catch (error) {
+      Alert.alert('Couldn’t export your notes', (error as Error).message);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const groups: Row[][] = [
     [
       {
-        icon: 'zap',
+        icon: LightningIcon,
         label: 'Keyword boosting',
         detail: keytermCount ? String(keytermCount) : undefined,
-        href: '/settings/keyterms',
+        onPress: () => router.push('/settings/keyterms'),
+      },
+      {
+        icon: DropIcon,
+        label: 'Appearance',
+        onPress: () => router.push('/settings/appearance'),
       },
     ],
     [
-      { icon: 'bell', label: 'Notifications' },
-      { icon: 'droplet', label: 'Appearance' },
-    ],
-    [
-      { icon: 'download', label: 'Export notes' },
-      { icon: 'info', label: 'About' },
+      {
+        icon: DownloadSimpleIcon,
+        label: 'Export notes',
+        detail: exporting ? 'preparing…' : 'Markdown',
+        onPress: exporting ? () => {} : exportAll,
+      },
     ],
   ];
-  if (DEV_TOOLS) groups.push([{ icon: 'tool', label: 'Developer', href: '/settings/developer' }]);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <TopBar
-        icon="chevron-left"
+        icon={CaretLeftIcon}
         accessibilityLabel="Back"
         onPress={() => router.back()}
         title="Settings"
