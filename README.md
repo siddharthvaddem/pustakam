@@ -6,14 +6,20 @@
 
 <p align="center"><strong>A voice journal that lives entirely on your phone.</strong></p>
 
+Yes, it's yet another notes app.
+
 You don't need SOTA models for everything. I believe we need smaller, more intentional models: built for one job, and small enough to run on the phone you already carry. Pustakam is free, works offline and keeps nothing on a server. Your notes are yours, and they export as plain Markdown whenever you want.
 
-If you want something free and you care about privacy, you no longer have to choose: runtimes like [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) and [ExecuTorch](https://github.com/pytorch/executorch) make real AI apps possible on the phone itself today.
+Make sense of your thoughts.
+
+If you want something free and you care about privacy, you no longer have to choose: runtimes like [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) and [ExecuTorch](https://github.com/pytorch/executorch) enable us to run fairly smart models locally on our phones today.
 
 <p align="center">
-  <img src="docs/images/home.png" width="250" alt="The home screen: a glowing orb with 'tap to speak' underneath" />
+  <img src="docs/images/home.png" width="250" alt="The home screen in light mode: an amber orb with 'tap to speak' underneath" />
   &nbsp;
   <img src="docs/images/search.png" width="250" alt="Searching 'travel plans' finds notes about a Kyoto trip and a Lisbon weekend" />
+  &nbsp;
+  <img src="docs/images/graph.png" width="250" alt="The graph tab with the food theme selected, showing its three notes about pasta, tomatoes and a new recipe" />
 </p>
 
 ## Models
